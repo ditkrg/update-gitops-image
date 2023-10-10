@@ -45,7 +45,7 @@ async function main() {
     //   repo,
     //   ref: `refs/heads/main`
     // })
-    const reference = await octokit.request('GET /repos/{owner}/{repo}/git/matching-refs/{ref}', {
+    const reference = await octokit.request(`GET /repos/${owner}/${repo}/git/matching-refs/refs/head/main`, {
       owner,
       repo,
       ref: 'refs/head/main',
