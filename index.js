@@ -20,11 +20,11 @@ async function main() {
     console.log("branch: ", branchOrTagName);
 
     const branchNameOnGitOpsRepo = `update-${currentRepo}-${env}`; // update-dms-dev
-    try {
-      const gh = github.getOctokit(core.getInput('github-token'))
+    const gh = github.getOctokit(core.getInput('github-token'))
 
-      const owner = core.getInput('owner', { required: true })
-      const repo = core.getInput('repo', { required: true })
+    const owner = core.getInput('owner', { required: true })
+    const repo = core.getInput('repo', { required: true })
+    try {
 
 
       await gh.rest.repos.getBranch({
