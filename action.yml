@@ -5,10 +5,10 @@ inputs:
     description: "Owner of the repository if it is not the current one"
     required: true
   repo:
-    description: "Repository on which to release.  Used only if you want to create the release on another repo"
+    description: "Repository on which to udpate. Used only if you want to udpate on another repo"
     required: true
   imageTag:
-    description: "The tag of the image to be released"
+    description: "The tag of the image to be udpated"
     required: true
   githubToken:
     description: GitHub Token
