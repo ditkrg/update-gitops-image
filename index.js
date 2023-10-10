@@ -8,7 +8,7 @@ const octokit = new Octokit({
 })
 
 // Get the branch name from
-const branch = github.context.payload.ref.replace('refs/heads/', '')
+const branch = github.context.payload.ref.replace('refs/heads/', '').replace('refs/tags/', '')
 console.log("branch: ", branch)
 // if branch is equal to main log a message else if it's dev log another message. if it's from a tag log a third message
 if (branch === 'main') {
