@@ -11,21 +11,21 @@ async function main() {
   // })
   try {
 
-    const currentRepo = github.context.payload.repository.full_name.split('/')[1];
-    const branchOrTagName = github.context.payload.ref.replace('refs/heads/', '').replace('refs/tags/', '');
+    const currentRepo = context.payload.repository.full_name.split('/')[1];
+    const branchOrTagName = context.payload.ref.replace('refs/heads/', '').replace('refs/tags/', '');
     const env = branchOrTagName.startsWith('v') ? 'prod' : branchOrTagName;
     const imageTag = core.getInput('imageTag', { required: true })
 
 
     console.log("branch: ", branchOrTagName);
 
+    const branchNameOnGitOpsRepo = `update-${currentRepo}-${env}`; // update-dms-dev
     try {
       const gh = github.getOctokit(core.getInput('github-token'))
 
       const owner = core.getInput('owner', { required: true })
       const repo = core.getInput('repo', { required: true })
 
-      const branchNameOnGitOpsRepo = `update-${currentRepo}-${env}`; // update-dms-dev
 
       await gh.rest.repos.getBranch({
         owner,
