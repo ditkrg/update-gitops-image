@@ -7,9 +7,8 @@ const octokit = new Octokit({
   auth: core.getInput('github-token')
 })
 
-// Get the branch name from the event payload
-const branch = github.context.payload.pull_request.head.ref
-
+// Get the branch name from
+const branch = github.context.payload.ref
 // if branch is equal to main log a message else if it's dev log another message. if it's from a tag log a third message
 if (branch === 'main') {
   console.log('This is the main branch')
