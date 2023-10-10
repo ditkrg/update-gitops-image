@@ -22,7 +22,7 @@ async function main() {
       const branchResponse = await gh.rest.repos.getBranch({
         owner,
         repo,
-        branch: 'main'
+        branch: branchNameOnGitOpsRepo
       })
 
       core.info(`branchResponse: ${JSON.stringify(branchResponse)}`)
