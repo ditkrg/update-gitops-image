@@ -10,7 +10,8 @@ async function main() {
     auth: core.getInput('githubToken')
   })
   try {
-
+    const owner = core.getInput('owner', { required: true })
+    const repo = core.getInput('repo', { required: true })
     const currentRepo = context.payload.repository.full_name.split('/')[1];
     const branchOrTagName = context.payload.ref.replace('refs/heads/', '').replace('refs/tags/', '');
     const env = branchOrTagName.startsWith('v') ? 'prod' : branchOrTagName;
@@ -19,11 +20,9 @@ async function main() {
 
     console.log("branch: ", branchOrTagName);
 
-    const branchNameOnGitOpsRepo = `update-${currentRepo}-${env}`; // update-dms-dev
+    const branchNameOnGitOpsRepo = `update-${repo}-${env}`; // update-dms-dev
     const gh = github.getOctokit(core.getInput('githubToken'))
 
-    const owner = core.getInput('owner', { required: true })
-    const repo = core.getInput('repo', { required: true })
     try {
 
 
