@@ -33,4 +33,4 @@ jobs:
           owner: ditkrg
           repo: pilgrimage-gitops-duplicate
           imageTag: "v1.0.0"
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          githubToken: ${{ secrets.PAT_TOKEN }}
