@@ -26,9 +26,7 @@ async function main() {
         repo,
         branch: branchNameOnGitOpsRepo
       })
-      core.info(`Branch response is: ${JSON.stringify(branchResponse)}`)
 
-      core.setFailed(`Branch ${branchNameOnGitOpsRepo} already exists on ${owner}/${repo}`)
       return;
     } catch (error) {
       core.setFailed(error)
@@ -42,10 +40,16 @@ async function main() {
     core.info(`Branch: ${branchNameOnGitOpsRepo}`)
     core.info(`Commit: ${context.sha}`)
 
-    const reference = await gh.rest.git.getRef({
+    // const reference = await gh.rest.git.getRef({
+    //   owner,
+    //   repo,
+    //   ref: `refs/heads/main`
+    // })
+    const reference = await octokit.request('GET /repos/{owner}/{repo}/git/matching-refs/{ref}', {
       owner,
       repo,
-      ref: `refs/heads/main`
+      ref: 'refs/head/main',
+
     })
 
     core.info(`Reference: ${JSON.stringify(reference)}`)
