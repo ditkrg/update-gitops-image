@@ -6,9 +6,9 @@ const { context } = require('@actions/github');
 async function main() {
 
 
-  // const octokit = new Octokit({
-  //   auth: core.getInput('github-token')
-  // })
+  const octokit = new Octokit({
+    auth: core.getInput('githubToken')
+  })
   try {
 
     const currentRepo = context.payload.repository.full_name.split('/')[1];
@@ -20,7 +20,7 @@ async function main() {
     console.log("branch: ", branchOrTagName);
 
     const branchNameOnGitOpsRepo = `update-${currentRepo}-${env}`; // update-dms-dev
-    const gh = github.getOctokit(core.getInput('github-token'))
+    const gh = github.getOctokit(core.getInput('githubToken'))
 
     const owner = core.getInput('owner', { required: true })
     const repo = core.getInput('repo', { required: true })

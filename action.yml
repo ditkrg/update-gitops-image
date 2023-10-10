@@ -10,6 +10,9 @@ inputs:
   imageTag:
     description: "The tag of the image to be released"
     required: true
+  githubToken:
+    description: "The tag of the image to be released"
+    required: true
 outputs:
   branchName:
     description: "The Branch Name of the created branch"
