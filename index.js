@@ -25,7 +25,7 @@ async function main() {
         branch: 'main'
       })
 
-      return;
+      core.info(`branchResponse: ${JSON.stringify(branchResponse)}`)
     } catch (error) {
       core.setFailed(error)
 
