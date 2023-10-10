@@ -44,7 +44,7 @@ async function main() {
       ref: `refs/heads/main`
     })
 
-    core.info(`Reference: ${JSON.stringify(reference)}`)
+    core.info(`Reference: ${reference}`)
 
     // Create a PR to merge the branch into main
     const pr = await gh.rest.pulls.create({
