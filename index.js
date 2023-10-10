@@ -21,11 +21,12 @@ async function main() {
     try {
 
 
-      await gh.rest.repos.getBranch({
+      const branchResponse = await gh.rest.repos.getBranch({
         owner,
         repo,
         branch: branchNameOnGitOpsRepo
       })
+      core.info(`Branch response is: ${JSON.stringify(branchResponse)}`)
 
       core.setFailed(`Branch ${branchNameOnGitOpsRepo} already exists on ${owner}/${repo}`)
       return;
