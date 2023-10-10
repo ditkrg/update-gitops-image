@@ -17,7 +17,7 @@ async function main() {
     const imageTag = core.getInput('imageTag', { required: true })
 
 
-    console.log("branch: ", branch);
+    console.log("branch: ", branchOrTagName);
 
     try {
       const gh = github.getOctokit(core.getInput('github-token'))
