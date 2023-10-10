@@ -5,15 +5,13 @@ const { context } = require('@actions/github');
 
 async function main() {
   try {
-    const owner = core.getInput('owner', { required: true })
-    const repo = core.getInput('repo', { required: true })
-    const currentRepo = context.payload.repository.full_name.split('/')[1];
-    const branchOrTagName = context.payload.ref.replace('refs/heads/', '').replace('refs/tags/', '');
-    const env = branchOrTagName.startsWith('v') ? 'prod' : branchOrTagName;
-    const imageTag = core.getInput('imageTag', { required: true })
+    const owner = core.getInput('owner', { required: true }) //ditkrg
+    const repo = core.getInput('repo', { required: true }) //pilgrimage-gitops
+    const currentRepo = context.payload.repository.full_name.split('/')[1]; //pilgrimage-processing-api
+    const branchOrTagName = context.payload.ref.replace('refs/heads/', '').replace('refs/tags/', ''); //main,dev,v1.2.3
+    const env = branchOrTagName.startsWith('v') ? 'prod' : branchOrTagName; // prod, dev, main
+    const imageTag = core.getInput('imageTag', { required: true }) //v1.2.3
 
-
-    console.log("branch: ", branchOrTagName);
     const branchSuffix = env === 'prod' ? `to-${branchOrTagName}` : env; // possible outcomes: to-v1.2.3, dev, main
     const branchNameOnGitOpsRepo = `update-${repo}-${branchSuffix}`.replace('-gitops', ''); // update-dms-dev
     const gh = github.getOctokit(core.getInput('githubToken'))
@@ -24,7 +22,7 @@ async function main() {
       const branchResponse = await gh.rest.repos.getBranch({
         owner,
         repo,
-        branch: branchNameOnGitOpsRepo
+        branch: 'main'
       })
 
       return;
