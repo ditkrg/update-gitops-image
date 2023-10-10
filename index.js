@@ -35,7 +35,8 @@ async function main() {
       core.setFailed(`Branch ${branchNameOnGitOpsRepo} already exists on ${owner}/${repo}`)
       return;
     } catch (error) {
-      // do nothing
+      core.setFailed(error)
+
     }
 
     core.info(`Branch ${branchNameOnGitOpsRepo} does not exist on ${owner}/${repo}`)
@@ -70,7 +71,7 @@ async function main() {
     core.setOutput('branchUrl', `https://github.com/${owner}/${repo}/tree/${branchNameOnGitOpsRepo}`)
 
   } catch (error) {
-    core.setFailed(error.message)
+    core.setFailed(error)
   }
 
 }
