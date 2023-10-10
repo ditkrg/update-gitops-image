@@ -4,8 +4,8 @@ on:
   # pull_request:
   # types: [labeled]
   push:
-    branches:
-      - dev
+    # branches:
+    #   - dev
 jobs:
   hello-world-job:
     runs-on: ubuntu-latest
