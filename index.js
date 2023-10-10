@@ -3,10 +3,6 @@ const core = require('@actions/core')
 const { Octokit } = require('@octokit/rest')
 const { context } = require('@actions/github');
 
-const octokit = new Octokit({
-  auth: core.getInput('githubToken')
-})
-
 async function main() {
   try {
     const owner = core.getInput('owner', { required: true })
@@ -20,23 +16,22 @@ async function main() {
     console.log("branch: ", branchOrTagName);
 
     const branchNameOnGitOpsRepo = `update-${repo}-${env}`.replace('-gitops', ''); // update-dms-dev
-    const gh = new Octokit({
-      auth: core.getInput('githubToken')
-    })
-    // try {
+    const gh = github.getOctokit(core.getInput('githubToken'))
+
+    try {
 
 
-    //   const branchResponse = await gh.rest.repos.getBranch({
-    //     owner,
-    //     repo,
-    //     branch: branchNameOnGitOpsRepo
-    //   })
+      const branchResponse = await gh.rest.repos.getBranch({
+        owner,
+        repo,
+        branch: branchNameOnGitOpsRepo
+      })
 
-    //   return;
-    // } catch (error) {
-    //   core.setFailed(error)
+      return;
+    } catch (error) {
+      core.setFailed(error)
 
-    // }
+    }
 
     core.info(`Branch ${branchNameOnGitOpsRepo} does not exist on ${owner}/${repo}`)
     core.info(`Creating branch ${branchNameOnGitOpsRepo} on ${owner}/${repo}`)
@@ -59,17 +54,17 @@ async function main() {
 
     core.info(`Reference: ${JSON.stringify(reference)}`)
 
-    // // Create a PR to merge the branch into main
-    // const pr = await gh.rest.pulls.create({
-    //   owner,
-    //   repo,
-    //   title: `Update ${currentRepo}'s image tag to ${imageTag}`,
-    //   head: branchNameOnGitOpsRepo,
-    //   base: 'main',
-    //   body: `Update ${currentRepo}'s image tag to ${imageTag}`
-    // })
+    // Create a PR to merge the branch into main
+    const pr = await gh.rest.pulls.create({
+      owner,
+      repo,
+      title: `Update ${currentRepo}'s image tag to ${imageTag}`,
+      head: branchNameOnGitOpsRepo,
+      base: 'main',
+      body: `Update ${currentRepo}'s image tag to ${imageTag}`
+    })
 
-    // core.setOutput('prUrl', pr.data.html_url)
+    core.setOutput('prUrl', pr.data.html_url)
     core.setOutput('branchName', branchNameOnGitOpsRepo)
     core.setOutput('branchUrl', `https://github.com/${owner}/${repo}/tree/${branchNameOnGitOpsRepo}`)
 
