@@ -14,8 +14,8 @@ async function main() {
 
 
     console.log("branch: ", branchOrTagName);
-
-    const branchNameOnGitOpsRepo = `update-${repo}-${env}`.replace('-gitops', ''); // update-dms-dev
+    const branchSuffix = env === 'prod' ? `to-${branchOrTagName}` : env; // possible outcomes: to-v1.2.3, dev, main
+    const branchNameOnGitOpsRepo = `update-${repo}-${branchSuffix}`.replace('-gitops', ''); // update-dms-dev
     const gh = github.getOctokit(core.getInput('githubToken'))
 
     try {
