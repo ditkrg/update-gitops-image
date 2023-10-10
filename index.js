@@ -41,14 +41,13 @@ async function main() {
     core.info(`Branch: ${branchNameOnGitOpsRepo}`)
     core.info(`Commit: ${context.sha}`)
 
-    await gh.rest.git.createRef({
+    const reference = await gh.rest.git.getRef({
       owner,
       repo,
-      ref: `refs/heads/${branchNameOnGitOpsRepo}`,
-      sha: context.sha
+      ref: `refs/heads/main`
     })
 
-
+    core.info(`Reference: ${JSON.stringify(reference)}`)
 
     // Create a PR to merge the branch into main
     const pr = await gh.rest.pulls.create({
