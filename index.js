@@ -20,7 +20,7 @@ async function main() {
 
     console.log("branch: ", branchOrTagName);
 
-    const branchNameOnGitOpsRepo = `update-${repo}-${env}`; // update-dms-dev
+    const branchNameOnGitOpsRepo = `update-${repo}-${env}`.replace('-gitops', ''); // update-dms-dev
     const gh = github.getOctokit(core.getInput('githubToken'))
 
     try {
@@ -50,7 +50,6 @@ async function main() {
       owner,
       repo,
       ref: `refs/heads/${branchNameOnGitOpsRepo}`,
-
       sha: context.sha
     })
 
