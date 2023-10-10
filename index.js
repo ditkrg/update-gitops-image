@@ -25,7 +25,7 @@ async function main() {
         branch: branchNameOnGitOpsRepo
       })
 
-      core.info(`branchResponse: ${JSON.stringify(branchResponse)}`)
+      core.info(`branchResponse: ${branchResponse}`)
     } catch (error) {
       core.setFailed(error)
 
