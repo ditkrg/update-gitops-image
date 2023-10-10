@@ -1,5 +1,20 @@
 name: "Hello World"
 description: "Prints hello world"
+inputs:
+  owner:
+    description: "Owner of the repository if it is not the current one"
+    required: true
+  repo:
+    description: "Repository on which to release.  Used only if you want to create the release on another repo"
+    required: true
+  imageTag:
+    description: "The tag of the image to be released"
+    required: true
+outputs:
+  branchName:
+    description: "The Branch Name of the created branch"
+  branchUrl:
+    description: "The URL users can navigate to in order to view the branch"
 
 runs:
   using: "node20"
