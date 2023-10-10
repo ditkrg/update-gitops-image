@@ -12,7 +12,7 @@ async function main() {
     const env = branchOrTagName.startsWith('v') ? 'prod' : branchOrTagName; // prod, dev, main
     const imageTag = core.getInput('imageTag', { required: true }) //v1.2.3
 
-    const branchSuffix = env === 'prod' ? `to-${branchOrTagName}` : env; // possible outcomes: to-v1.2.3, dev, main
+    const branchSuffix = env === 'prod' ? `prod-to-${branchOrTagName}` : env; // possible outcomes: to-v1.2.3, dev, main
     const branchNameOnGitOpsRepo = `update-${repo}-${branchSuffix}`.replace('-gitops', ''); // update-dms-dev
     const gh = github.getOctokit(core.getInput('githubToken'))
 
