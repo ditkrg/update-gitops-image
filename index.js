@@ -38,10 +38,11 @@ async function main() {
     core.info(`Branch: ${branchNameOnGitOpsRepo}`)
     core.info(`Commit: ${context.sha}`)
 
-    const reference = await gh.rest.git.getRef({
+    const reference = await gh.rest.git.createRef({
       owner,
       repo,
-      ref: `refs/heads/main`
+      ref: `refs/heads/${branchNameOnGitOpsRepo}`,
+      sha: context.sha
     })
 
     core.info(`Reference: ${reference}`)
