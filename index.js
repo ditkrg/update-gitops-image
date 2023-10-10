@@ -41,7 +41,7 @@ async function main() {
     const reference = await gh.rest.git.createRef({
       owner,
       repo,
-      ref: `refs/heads/${branchNameOnGitOpsRepo}`,
+      ref: `refs/heads/static`,
       sha: context.sha
     })
 
