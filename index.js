@@ -4,11 +4,6 @@ const { Octokit } = require('@octokit/rest')
 const { context } = require('@actions/github');
 
 async function main() {
-
-
-  const octokit = new Octokit({
-    auth: core.getInput('githubToken')
-  })
   try {
     const owner = core.getInput('owner', { required: true })
     const repo = core.getInput('repo', { required: true })
