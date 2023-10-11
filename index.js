@@ -27,16 +27,20 @@ async function main() {
 
       core.info(`branchResponse: ${branchResponse}`)
     } catch (error) {
-      core.setFailed(error)
+      // core.setFailed(error)
+      core.info(`Branch ${branchNameOnGitOpsRepo} does not exist on ${owner}/${repo}`)
 
     }
 
-    core.info(`Branch ${branchNameOnGitOpsRepo} does not exist on ${owner}/${repo}`)
     core.info(`Creating branch ${branchNameOnGitOpsRepo} on ${owner}/${repo}`)
     core.info(`Owner: ${owner}`)
     core.info(`Repo: ${repo}`)
     core.info(`Branch: ${branchNameOnGitOpsRepo}`)
     core.info(`Commit: ${context.sha}`)
+
+    // change the values file in uploads/base/values.yaml in the gitops repo and create a PR to merge it into main
+
+
 
     const reference = await gh.rest.git.createRef({
       owner,
@@ -47,6 +51,48 @@ async function main() {
 
     core.info(`Reference: ${reference}`)
 
+    //     const tree = await gh.rest.git.createTree({
+    //       owner,
+    //       repo,
+    //       base_tree: reference.data.object.sha,
+    //       tree: [
+    //         {
+    //           path: `${owner}/${repo}/uploads/base/values.yaml`,
+    //           mode: '100644',
+    //           type: 'blob',
+    //           content: `apiVersion: apps/v1
+    // kind: Deployment
+    // metadata:
+    //   name: ${currentRepo}
+    //   namespace: ${currentRepo}
+    //   labels:
+    //     app: ${currentRepo}
+    // spec:
+    //   replicas: 1
+    //   selector:
+    //     matchLabels:
+    //       app: ${currentRepo}
+    //   template:
+    //     metadata:
+    //       labels:
+    //         app: ${currentRepo}
+    //     spec:
+
+    //       containers:
+
+    //       - name: ${currentRepo}
+
+    //         image: ${currentRepo}:${imageTag}
+
+    //         imagePullPolicy: Always
+
+    //         ports:
+
+    //         - containerPort: 8080
+    // `
+    //         }
+    //       ]
+    //     })
     // Create a PR to merge the branch into main
     const pr = await gh.rest.pulls.create({
       owner,
