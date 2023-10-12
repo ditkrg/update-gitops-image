@@ -82,7 +82,14 @@ async function main() {
 
     core.info(`tree: ${tree}`)
     const commit = await gh.rest.git.createCommit({
-
+      author: {
+        name: 'github-actions[bot]',
+        email: 'github-actions[bot]@users.noreply.github.com',
+      },
+      committer: {
+        name: 'github-actions[bot]',
+        email: 'github-actions[bot]@users.noreply.github.com',
+      },
       owner,
       repo,
       message: `Update ${currentRepo}'s image tag to ${imageTag}`,
