@@ -5,11 +5,12 @@ const { context } = require('@actions/github');
 
 async function main() {
   try {
+    core.info(`githubToken: ${core.getInput('githubToken')}`)
     const owner = core.getInput('owner', { required: true }) //ditkrg
-    const repo = core.getInput('repo', { required: true }) //pilgrimage-gitops
-    const currentRepo = context.payload.repository.full_name.split('/')[1]; //pilgrimage-processing-api
-    const branchOrTagName = context.payload.ref.replace('refs/heads/', '').replace('refs/tags/', ''); //main,dev,v1.2.3
-    const env = branchOrTagName.startsWith('v') ? 'prod' : branchOrTagName; // prod, dev, main
+    const repo = core.getInput('repo', { required: true }) //pilgrimage-gitops-duplicate
+    const currentRepo = 'pilgrimage-processing-api' // context.payload.repository.full_name.split('/')[1]; //pilgrimage-processing-api
+    const branchOrTagName = 'main' // context.payload.ref.replace('refs/heads/', '').replace('refs/tags/', ''); // main,dev,v1.2.3
+    const env = 'main' // branchOrTagName.startsWith('v') ? 'prod' : branchOrTagName; // prod, dev, main
     const imageTag = core.getInput('imageTag', { required: true }) //v1.2.3
 
     const branchSuffix = env === 'prod' ? `prod-to-${branchOrTagName}` : env; // possible outcomes: to-v1.2.3, dev, main
@@ -17,7 +18,6 @@ async function main() {
     const gh = github.getOctokit(core.getInput('githubToken'))
 
     try {
-
 
       const branchResponse = await gh.rest.repos.getBranch({
         owner,
@@ -36,78 +36,96 @@ async function main() {
     core.info(`Owner: ${owner}`)
     core.info(`Repo: ${repo}`)
     core.info(`Branch: ${branchNameOnGitOpsRepo}`)
-    core.info(`Commit: ${context.sha}`)
 
     // change the values file in uploads/base/values.yaml in the gitops repo and create a PR to merge it into main
 
+    const blob = await gh.rest.git.createBlob({
+      owner,
+      repo,
+      content: `Updated file with image tag ${imageTag}`,
+      encoding: 'utf-8'
+    })
 
+    core.info(`blob: ${blob}`)
 
     const reference = await gh.rest.git.createRef({
       owner,
       repo,
-      ref: `refs/heads/static`,
-      sha: context.sha
+      ref: `refs/heads/${branchNameOnGitOpsRepo}`,
+      sha: "db5767867ae79cd4dff04c005276913c6bd6720d"
     })
 
-    core.info(`Reference: ${reference}`)
 
-    //     const tree = await gh.rest.git.createTree({
-    //       owner,
-    //       repo,
-    //       base_tree: reference.data.object.sha,
-    //       tree: [
-    //         {
-    //           path: `${owner}/${repo}/uploads/base/values.yaml`,
-    //           mode: '100644',
-    //           type: 'blob',
-    //           content: `apiVersion: apps/v1
-    // kind: Deployment
-    // metadata:
-    //   name: ${currentRepo}
-    //   namespace: ${currentRepo}
-    //   labels:
-    //     app: ${currentRepo}
-    // spec:
-    //   replicas: 1
-    //   selector:
-    //     matchLabels:
-    //       app: ${currentRepo}
-    //   template:
-    //     metadata:
-    //       labels:
-    //         app: ${currentRepo}
-    //     spec:
+    core.info(`Reference: ${JSON.stringify(reference)}`)
 
-    //       containers:
-
-    //       - name: ${currentRepo}
-
-    //         image: ${currentRepo}:${imageTag}
-
-    //         imagePullPolicy: Always
-
-    //         ports:
-
-    //         - containerPort: 8080
-    // `
-    //         }
-    //       ]
-    //     })
-    // Create a PR to merge the branch into main
-    const pr = await gh.rest.pulls.create({
+    const branchResponse = await gh.rest.repos.getBranch({
       owner,
       repo,
-      title: `Update ${currentRepo}'s image tag to ${imageTag}`,
-      head: branchNameOnGitOpsRepo,
-      base: 'main',
-      body: `Update ${currentRepo}'s image tag to ${imageTag}`
+      branch: branchNameOnGitOpsRepo
     })
 
-    core.setOutput('prUrl', pr.data.html_url)
-    core.setOutput('branchName', branchNameOnGitOpsRepo)
-    core.setOutput('branchUrl', `https://github.com/${owner}/${repo}/tree/${branchNameOnGitOpsRepo}`)
+    core.info(`branchResponse: ${branchResponse}`)
+
+    const tree = await gh.rest.git.createTree({
+      owner,
+      repo,
+      base_tree: branchResponse.data.commit.sha,
+      tree: [
+        {
+          path: `${owner}/${repo}/uploads/base/values.yaml`,
+          mode: '100644',
+          type: 'blob',
+          sha: blob.data.sha
+        }
+      ]
+    })
+
+    core.info(`tree: ${tree}`)
+    const commit = await gh.rest.git.createCommit({
+
+      owner,
+      repo,
+      message: `Update ${currentRepo}'s image tag to ${imageTag}`,
+      tree: tree.data.sha,
+      parents: [reference.data.object.sha]
+    })
+
+    core.info(`commit: ${JSON.stringify(commit)}`)
+
+
+    const listRefs = await gh.rest.git.listMatchingRefs({
+      owner: "ditkrg",
+      repo: "pilgrimage-gitops-duplicate",
+      ref: `heads/update-pilgrimage-duplicate-main`
+    })
+
+    core.info(`listRefs: ${JSON.stringify(listRefs)}`)
+    const updateRef = await gh.rest.git.updateRef({
+      owner,
+      repo,
+      ref: reference.data.ref.replace('refs/', ''),
+      sha: commit.data.sha
+    })
+
+    core.info(`updateRef: ${updateRef}`)
+
+    // // Create a PR to merge the branch into main
+    // core.info(`head: ${owner}:${branchNameOnGitOpsRepo}`)
+    // const pr = await gh.rest.pulls.create({
+    //   owner,
+    //   repo,
+    //   title: `Update ${currentRepo}'s image tag to ${imageTag}`,
+    //   head: `${owner}:${branchNameOnGitOpsRepo}`,
+    //   base: 'main',
+    //   body: `Update ${currentRepo}'s image tag to ${imageTag}`
+    // })
+
+    // core.setOutput('prUrl', pr.data.html_url)
+    // core.setOutput('branchName', branchNameOnGitOpsRepo)
+    // core.setOutput('branchUrl', `https://github.com/${owner}/${repo}/tree/${branchNameOnGitOpsRepo}`)
 
   } catch (error) {
+    core.info(`error: ${error.message}`)
     core.setFailed(error)
   }
 
