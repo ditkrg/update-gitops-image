@@ -90,6 +90,7 @@ async function main() {
         name: 'github-actions[bot]',
         email: 'github-actions[bot]@users.noreply.github.com',
       },
+      signature: core.getInput('pgp-private-key'),
       owner,
       repo,
       message: `Update ${currentRepo}'s image tag to ${imageTag}`,
