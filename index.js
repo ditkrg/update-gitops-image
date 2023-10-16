@@ -2,7 +2,7 @@ const github = require('@actions/github')
 const core = require('@actions/core')
 const { Octokit } = require('@octokit/rest')
 const { context } = require('@actions/github');
-
+const exec = require('@actions/exec')
 
 async function main() {
   try {
@@ -80,38 +80,39 @@ async function main() {
 
     core.info(`tree: ${JSON.stringify(tree)}`)
 
-    const commit = await gh.rest.git.createCommit({
+    const commit = exec.exec('git', ['commit', '-S', '-m', `Update ${currentRepo}'s image tag to ${imageTag}`])
+
+    // const commit = await gh.rest.git.createCommit({
+    //   owner,
+    //   repo,
+    //   message: `Update ${currentRepo}'s image tag to ${imageTag}`,
+    //   tree: tree.data.sha,
+    //   parents: [reference.data.object.sha],
+    //   committer: {
+    //     name: 'github-actions[bot]',
+    //     email: 'github-actions[bot]@users.noreply.github.com'
+    //   },
+    //   author: {
+    //     name: 'github-actions[bot]',
+    //     email: 'github-actions[bot]@users.noreply.github.com'
+    //   },
+    // })
+
+    // core.info(`commit: ${JSON.stringify(commit)}`)
+
+
+    // get the last commit sha
+    const lastCommit2 = await gh.rest.repos.getCommit({
       owner,
       repo,
-      message: `Update ${currentRepo}'s image tag to ${imageTag}`,
-      tree: tree.data.sha,
-      parents: [reference.data.object.sha],
-      committer: {
-        name: 'github-actions[bot]',
-        email: 'github-actions[bot]@users.noreply.github.com'
-      },
-      author: {
-        name: 'github-actions[bot]',
-        email: 'github-actions[bot]@users.noreply.github.com'
-      },
+      ref: branchOrTagName
     })
-
-    core.info(`commit: ${JSON.stringify(commit)}`)
-
-
-    const listRefs = await gh.rest.git.listMatchingRefs({
-      owner: "5h4k4r",
-      repo: "pilgrimage-gitops-shakar",
-      ref: `heads/update-pilgrimage-shakar-main`
-    })
-
-    core.info(`listRefs: ${JSON.stringify(listRefs)}`)
 
     const updateRef = await gh.rest.git.updateRef({
       owner,
       repo,
       ref: reference.data.ref.replace('refs/', ''),
-      sha: commit.data.sha
+      sha: lastCommit2.data.sha
     })
 
     core.info(`updateRef: ${updateRef}`)
