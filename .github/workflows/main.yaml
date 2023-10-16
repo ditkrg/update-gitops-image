@@ -1,41 +1,107 @@
-name: Test Action
+name: Update Values File
 
 on:
-  # pull_request:
-  # types: [labeled]
   push:
-    # branches:
-    #   - dev
+    branches:
+      - main
+      - dev
+    tags:
+      - "v*" # Triggered by tags starting with 'v'
+
 jobs:
-  hello-world-job:
+  update-values:
     runs-on: ubuntu-latest
-    name: A job to say hello
+
     steps:
-      - name: Checkout
+      # - name: Setup Git
+      #   run: apt-get update -y && apt-get install git -y
+
+      - name: Checkout Target Repository
         uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v2
         with:
-          version: 8
+          repository: 5h4k4r/pilgrimage-gitops-shakar # Replace with the actual target repository
+          token: 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 # insert the token
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: "20"
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Configure Git
+      - name: Determine Environment
+        id: env
         run: |
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            environment=production
+          elif [[ $GITHUB_REF == refs/heads/main ]]; then
+            environment=staging
+          else
+            environment=dev
+          fi
+          echo "::set-output name=environment::${environment}"
+
+      - name: Determine Component Name
+        id: component
+        run: |
+          component=$(basename $PWD)
+          echo "::set-output name=component::${component}"
+
+      - name: Update Values File
+        run: |
+          environment=${{ steps.env.outputs.environment }}
+          component=${{ steps.component.outputs.component }}
+          if [ $environment == "production" ]; then
+            target_file="overlays/production/values.yaml"
+          elif [ $environment == "staging" ]; then
+            target_file="overlays/staging/values.yaml"
+          else
+            target_file="overlays/development/values.yaml"
+          fi
+          # Update the values.yaml file with the new image tag
+          # You'll need to customize the logic to update your specific file
+          # Example command to update image tag:
+          # Update the image.tag field in the values.yaml file
+          image_tag="$GITHUB_REF"
+          echo "Helo" >> "oauth2-proxy/$target_file"
+
+        env:
+          GITHUB_REF: ${{ github.ref }}
+
+      - name: print Values
+        run: |
+          environment=${{ steps.env.outputs.environment }}
+          component=${{ steps.component.outputs.component }}
+          branch_name="update-$component-$environment"
+
+          echo "git checkout -b $branch_name"
+          echo "Update $component/$target_file for $environment"
+
+      - name: Commit Changes
+        run: |
+          environment=${{ steps.env.outputs.environment }}
+          component=${{ steps.component.outputs.component }}
+          branch_name="update-$component-$environment"
+
+          echo "git checkout -b $branch_name"
+          echo "Update $component/$target_file for $environment"
+
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-      - name: Hello world action step
-        uses: ./
-        id: hello
+
+          git checkout -b $branch_name
+          git add .
+          git commit -m "Update $component/$target_file for $environment"
+          git push origin $branch_name
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
         with:
-          owner: 5h4k4r
-          repo: pilgrimage-gitops-shakar
-          imageTag: "v1.0.0"
-          githubToken: ${{ secrets.PAT_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
+          commit-message: Update $component/$target_file for $environment
+          title: Update $component/$target_file for $environment
+          body: |
+            Update $component/$target_file for $environment
+          branch: $branch_name
+          branch-suffix: timestamp
+          labels: automated
+          reviewers: 5h4k4r
+          assignees: 5h4k4r
+          milestone: 1
+          draft: false
+          signoff: true
+          delete-branch: true
