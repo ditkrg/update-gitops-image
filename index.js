@@ -17,6 +17,9 @@ async function main() {
     // Create a branch using GitHub Actions
     await createBranch(owner, repo, branchNameOnGitOpsRepo, branchOrTagName);
 
+    // print something in /uploads/base/values.yaml
+    await exec('echo', [`imageTag: ${imageTag}`], { cwd: 'uploads/base' });
+
     // Make changes to the file and create a commit using GitHub Actions
     await createCommit(owner, repo, branchNameOnGitOpsRepo, imageTag);
 
