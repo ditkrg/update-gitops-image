@@ -6,8 +6,8 @@ const { context } = require('@actions/github');
 
 async function main() {
   try {
-    core.info(`githubToken: ${core.getInput('githubToken')}`)
-    const owner = core.getInput('owner', { required: true }) //ditkrg
+
+    const owner = core.getInput('owner', { required: true }) //5h4k4r
     const repo = core.getInput('repo', { required: true }) //pilgrimage-gitops-shakar
     const currentRepo = 'pilgrimage-processing-api' // context.payload.repository.full_name.split('/')[1]; //pilgrimage-processing-api
     const branchOrTagName = 'main' // context.payload.ref.replace('refs/heads/', '').replace('refs/tags/', ''); // main,dev,v1.2.3
@@ -86,7 +86,7 @@ async function main() {
 
 
     const listRefs = await gh.rest.git.listMatchingRefs({
-      owner: "ditkrg",
+      owner: "5h4k4r",
       repo: "pilgrimage-gitops-shakar",
       ref: `heads/update-pilgrimage-shakar-main`
     })
