@@ -47,16 +47,21 @@ async function main() {
       encoding: 'utf-8'
     })
 
+    // get the last commit sha
+    const lastCommit = await gh.rest.repos.getCommit({
+      owner,
+      repo,
+      ref: branchOrTagName
+    })
+
     core.info(`blob: ${blob}`)
 
     const reference = await gh.rest.git.createRef({
       owner,
       repo,
       ref: `refs/heads/${branchNameOnGitOpsRepo}`,
-      sha: "db5767867ae79cd4dff04c005276913c6bd6720d"
+      sha: lastCommit.data.sha
     })
-
-
     core.info(`Reference: ${JSON.stringify(reference)}`)
 
     const tree = await gh.rest.git.createTree({
@@ -102,20 +107,20 @@ async function main() {
 
     core.info(`updateRef: ${updateRef}`)
 
-    // // Create a PR to merge the branch into main
-    // core.info(`head: ${owner}:${branchNameOnGitOpsRepo}`)
-    // const pr = await gh.rest.pulls.create({
-    //   owner,
-    //   repo,
-    //   title: `Update ${currentRepo}'s image tag to ${imageTag}`,
-    //   head: `${owner}:${branchNameOnGitOpsRepo}`,
-    //   base: 'main',
-    //   body: `Update ${currentRepo}'s image tag to ${imageTag}`
-    // })
+    // Create a PR to merge the branch into main
+    core.info(`head: ${owner}:${branchNameOnGitOpsRepo}`)
+    const pr = await gh.rest.pulls.create({
+      owner,
+      repo,
+      title: `Update ${currentRepo}'s image tag to ${imageTag}`,
+      head: `${owner}:${branchNameOnGitOpsRepo}`,
+      base: 'main',
+      body: `Update ${currentRepo}'s image tag to ${imageTag}`
+    })
 
-    // core.setOutput('prUrl', pr.data.html_url)
-    // core.setOutput('branchName', branchNameOnGitOpsRepo)
-    // core.setOutput('branchUrl', `https://github.com/${owner}/${repo}/tree/${branchNameOnGitOpsRepo}`)
+    core.setOutput('prUrl', pr.data.html_url)
+    core.setOutput('branchName', branchNameOnGitOpsRepo)
+    core.setOutput('branchUrl', `https://github.com/${owner}/${repo}/tree/${branchNameOnGitOpsRepo}`)
 
   } catch (error) {
     core.info(`error: ${error.message}`)
