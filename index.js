@@ -80,7 +80,10 @@ async function main() {
 
     core.info(`tree: ${JSON.stringify(tree)}`)
 
-    const commit = exec.exec('git', ['commit', '-S', '-m', `Update ${currentRepo}'s image tag to ${imageTag}`])
+    await exec.exec('git', ['config', '--global', 'user.email', 'github-actions[bot]@users.noreply.github.com'])
+    await exec.exec('git', ['config', '--global', 'user.name', 'github-actions[bot]'])
+    await exec.exec('git', 'add', '.')
+    await exec.exec('git', ['commit', '-S', '-m', `Update ${currentRepo}'s image tag to ${imageTag}`])
 
     // const commit = await gh.rest.git.createCommit({
     //   owner,
