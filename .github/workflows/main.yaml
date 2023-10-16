@@ -34,4 +34,3 @@ jobs:
           repo: pilgrimage-gitops-duplicate
           imageTag: "v1.0.0"
           githubToken: ${{ secrets.PAT_TOKEN }}
-          pgp-private-key: ${{ secrets.PGP_PRIVATE_KEY }}
