@@ -24,7 +24,7 @@ async function main() {
     core.info(`Created a branch with name ${branchNameOnGitOpsRepo}`);
 
     // print something in uploads/base/values.yaml
-    await exec('echo', [`imageTag: ${imageTag}`], { cwd: 'uploads/base/values.yaml' });
+    await exec('echo', [`imageTag: ${imageTag}`], { cwd: `${process.cwd()}/uploads/base/values.yaml` });
 
     core.info(`Updated image tag to ${imageTag}`);
 
