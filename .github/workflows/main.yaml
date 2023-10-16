@@ -89,11 +89,20 @@ jobs:
           git push origin $branch_name
 
       - name: Create Pull Request
-        run: |
-          environment=${{ steps.env.outputs.environment }}
-          component=${{ steps.component.outputs.component }}
-          branch_name="update-$component-$environment"
-
-          gh pr create --base main --head $branch_name --title "Update $component/$target_file for $environment" --body "This pull request updates $component/$target_file for $environment."
-        env:
-          GH_TOKEN: ${{ github.token }}
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.PAT_TOKEN }}
+          commit-message: Update $component/$target_file for $environment
+          title: Update $component/$target_file for $environment
+          body: |
+            Update $component/$target_file for $environment
+          branch: $branch_name
+          base: $environment
+          labels: automerge
+          draft: false
+          reviewers: 5h4k4r
+          assignees: 5h4k4r
+          milestone: 1
+          signoff: true
+          branch-suffix: timestamp
+          delete-branch: true
