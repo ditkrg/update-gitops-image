@@ -35,7 +35,7 @@ jobs:
         uses: ./
         id: hello
         with:
-          owner: ditkrg
-          repo: pilgrimage-gitops-duplicate
+          owner: 5h4k4r
+          repo: pilgrimage-gitops-shakar
           imageTag: "v1.0.0"
           githubToken: ${{ secrets.PAT_TOKEN }}
