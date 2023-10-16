@@ -95,3 +95,5 @@ jobs:
           branch_name="update-$component-$environment"
 
           gh pr create --base main --head $branch_name --title "Update $component/$target_file for $environment" --body "This pull request updates $component/$target_file for $environment."
+        env:
+          GH_TOKEN: ${{ github.token }}
