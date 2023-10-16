@@ -85,7 +85,15 @@ async function main() {
       repo,
       message: `Update ${currentRepo}'s image tag to ${imageTag}`,
       tree: tree.data.sha,
-      parents: [reference.data.object.sha]
+      parents: [reference.data.object.sha],
+      committer: {
+        name: 'github-actions[bot]',
+        email: 'github-actions[bot]@users.noreply.github.com'
+      },
+      author: {
+        name: 'github-actions[bot]',
+        email: 'github-actions[bot]@users.noreply.github.com'
+      },
     })
 
     core.info(`commit: ${JSON.stringify(commit)}`)
