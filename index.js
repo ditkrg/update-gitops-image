@@ -11,17 +11,27 @@ async function main() {
     // Get the current branch name using GitHub Actions
     const branchOrTagName = await getBranch();
 
+
     const branchSuffix = branchOrTagName.startsWith('v') ? 'prod' : branchOrTagName;
     const branchNameOnGitOpsRepo = `update-${repo}-${branchSuffix}`;
+
+    core.info(`Current branch/tag name: ${branchOrTagName}`);
+    core.info(`New branch name: update-${repo}-${branchOrTagName}`);
 
     // Create a branch using GitHub Actions
     await createBranch(owner, repo, branchNameOnGitOpsRepo, branchOrTagName);
 
-    // print something in /uploads/base/values.yaml
+    core.info(`Created a branch with name ${branchNameOnGitOpsRepo}`);
+
+    // print something in uploads/base/values.yaml
     await exec('echo', [`imageTag: ${imageTag}`], { cwd: 'uploads/base' });
+
+    core.info(`Updated image tag to ${imageTag}`);
 
     // Make changes to the file and create a commit using GitHub Actions
     await createCommit(owner, repo, branchNameOnGitOpsRepo, imageTag);
+
+    core.info(`Created a commit with message "Update image tag to ${imageTag}"`);
 
     // Create a pull request using GitHub Actions
     await createPullRequest(owner, repo, branchNameOnGitOpsRepo, branchOrTagName, imageTag);
@@ -49,7 +59,7 @@ async function createBranch(owner, repo, branchName, baseBranch) {
 }
 
 async function createCommit(owner, repo, branchName, imageTag) {
-  await exec('git', ['add', 'uploads/base/values.yaml']);
+  await exec('git', ['add', '.']);
   await exec('git', ['commit', '-m', `Update image tag to ${imageTag}`]);
 }
 
