@@ -78,7 +78,8 @@ async function main() {
       ]
     })
 
-    core.info(`tree: ${tree}`)
+    core.info(`tree: ${JSON.stringify(tree)}`)
+
     const commit = await gh.rest.git.createCommit({
       owner,
       repo,
