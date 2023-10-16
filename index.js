@@ -54,7 +54,7 @@ async function main() {
       ref: branchOrTagName
     })
 
-    core.info(`blob: ${blob}`)
+    core.info(`blob: ${JSON.stringify(blob)}`)
 
     const reference = await gh.rest.git.createRef({
       owner,
