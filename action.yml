@@ -18,6 +18,8 @@ outputs:
     description: "The Branch Name of the created branch"
   branchUrl:
     description: "The URL users can navigate to in order to view the branch"
+  pullRequestUrl:
+    description: "The URL users can navigate to in order to view the pull request"
 
 runs:
   using: "node20"

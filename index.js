@@ -7,8 +7,8 @@ const { context } = require('@actions/github');
 async function main() {
   try {
 
-    const owner = core.getInput('owner', { required: true }) //5h4k4r
-    const repo = core.getInput('repo', { required: true }) //pilgrimage-gitops-shakar
+    const owner = core.getInput('owner', { required: true }) //ditkrg
+    const repo = core.getInput('repo', { required: true }) //pilgrimage-gitops-duplicate
     const currentRepo = 'pilgrimage-processing-api' // context.payload.repository.full_name.split('/')[1]; //pilgrimage-processing-api
     const branchOrTagName = 'main' // context.payload.ref.replace('refs/heads/', '').replace('refs/tags/', ''); // main,dev,v1.2.3
     const env = 'main' // branchOrTagName.startsWith('v') ? 'prod' : branchOrTagName; // prod, dev, main
@@ -100,9 +100,9 @@ async function main() {
 
 
     const listRefs = await gh.rest.git.listMatchingRefs({
-      owner: "5h4k4r",
-      repo: "pilgrimage-gitops-shakar",
-      ref: `heads/update-pilgrimage-shakar-main`
+      owner: "ditkrg",
+      repo: "pilgrimage-gitops-duplicate",
+      ref: `heads/update-pilgrimage-duplicate-main`
     })
 
     core.info(`listRefs: ${JSON.stringify(listRefs)}`)
@@ -127,7 +127,7 @@ async function main() {
       body: `Update ${currentRepo}'s image tag to ${imageTag}`
     })
 
-    core.setOutput('prUrl', pr.data.html_url)
+    core.setOutput('pullRequestUrl', pr.data.html_url)
     core.setOutput('branchName', branchNameOnGitOpsRepo)
     core.setOutput('branchUrl', `https://github.com/${owner}/${repo}/tree/${branchNameOnGitOpsRepo}`)
 

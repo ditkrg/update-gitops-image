@@ -26,25 +26,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # - name: Import GPG Key
-      #   id: import_gpg
-      #   uses: crazy-max/ghaction-import-gpg@v6
-      #   with:
-      #     gpg_private_key: ${{ secrets.PGP_PRIVATE_KEY }}
-      #     passphrase: ${{ secrets.PGP_PASSPHRASE }}
-      #     git_user_signingkey: true
-      #     git_commit_gpgsign: true
-
-      - name: Configure Git
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-
       - name: Hello world action step
         uses: ./
         id: hello
         with:
-          owner: 5h4k4r
-          repo: pilgrimage-gitops-shakar
+          owner: ditkrg
+          repo: pilgrimage-gitops-duplicate
           imageTag: "v1.0.0"
           githubToken: ${{ secrets.PAT_TOKEN }}
