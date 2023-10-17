@@ -56,7 +56,7 @@ jobs:
           # Example command to update image tag:
           # Update the image.tag field in the values.yaml file
           image_tag="$GITHUB_REF"
-          echo "Helo" >> "oauth2-proxy/$target_file"
+          echo "Helo world" >> "oauth2-proxy/$target_file"
 
         env:
           GITHUB_REF: ${{ github.ref }}
