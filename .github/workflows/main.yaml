@@ -82,27 +82,13 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
+          # Do not create a new branch if the branch already exists
+          if [[ $(git ls-remote origin $branch_name) ]]; then
+            git checkout $branch_name
+          else
+            git checkout -b $branch_name
+          fi
 
-          git checkout -b $branch_name
           git add .
-          git commit -m "Update $component/$target_file for $environment"
+          git commit -m -S "Update $component/$target_file for $environment"
           git push origin $branch_name
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
-        with:
-          token: ${{ secrets.PAT_TOKEN }}
-          commit-message: Update $component/$target_file for $environment
-          title: Update $component/$target_file for $environment
-          body: |
-            Update $component/$target_file for $environment
-          branch: $branch_name
-          base: $environment
-          labels: automerge
-          draft: false
-          reviewers: 5h4k4r
-          assignees: 5h4k4r
-          milestone: 1
-          signoff: true
-          branch-suffix: timestamp
-          delete-branch: true
