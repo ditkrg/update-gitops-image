@@ -117,7 +117,7 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: message
-          branch: update-${{ steps.component.outputs.component }}-${{ steps.env.outputs.environment }}
+          # branch: update-${{ steps.component.outputs.component }}-${{ steps.env.outputs.environment }}
           commit_user_name: DIT Bot
           commit_user_email: actions@github.com
           commit_author: actions@github.com
