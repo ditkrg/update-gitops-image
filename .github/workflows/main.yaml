@@ -30,25 +30,6 @@ jobs:
           repository: ditkrg/payroll-users-api
           token: ${{ steps.generate-token.outputs.token }}
 
-      # Use the REST API to commit changes, so we get automatic commit signing
-      - name: Commit changes
-        env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-          FILE_TO_COMMIT: data.csv
-          DESTINATION_BRANCH: data
-        run: |
-          export TODAY=$( date -u '+%Y-%m-%d' )
-          echo "Today is $TODAY" > $FILE_TO_COMMIT
-          export MESSAGE="chore: regenerate $FILE_TO_COMMIT for $TODAY"
-          export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
-          export CONTENT=$( base64 -i $FILE_TO_COMMIT )
-          gh api --method PUT /repos/ditkrg/payroll-users-api/contents/$FILE_TO_COMMIT \
-            --field message="$MESSAGE" \
-            --field content="$CONTENT" \
-            --field encoding="base64" \
-            --field branch="$DESTINATION_BRANCH" \
-            --field sha="$SHA"
-
       - name: Determine Environment
         id: env
         run: |
@@ -67,104 +48,90 @@ jobs:
           component=$(basename $PWD)
           echo "::set-output name=component::${component}"
 
-      - name: Update Values File
-        run: |
-          environment=${{ steps.env.outputs.environment }}
-          component=${{ steps.component.outputs.component }}
-          if [ $environment == "production" ]; then
-            target_file="overlays/production/values.yaml"
-          elif [ $environment == "staging" ]; then
-            target_file="overlays/staging/values.yaml"
-          else
-            target_file="overlays/development/values.yaml"
-          fi
-          # Update the values.yaml file with the new image tag
-          # You'll need to customize the logic to update your specific file
-          # Example command to update image tag:
-          # Update the image.tag field in the values.yaml file
-          image_tag="$GITHUB_REF"
-          echo "image:" > oauth2-proxy/$target_file
-          echo "  tag: v1.2.3" >> oauth2-proxy/$target_file
+      # - name: Update Values File
+      #   run: |
+      #     environment=${{ steps.env.outputs.environment }}
+      #     component=${{ steps.component.outputs.component }}
+      #     if [ $environment == "production" ]; then
+      #       target_file="overlays/production/values.yaml"
+      #     elif [ $environment == "staging" ]; then
+      #       target_file="overlays/staging/values.yaml"
+      #     else
+      #       target_file="overlays/development/values.yaml"
+      #     fi
+      #     # Update the values.yaml file with the new image tag
+      #     # You'll need to customize the logic to update your specific file
+      #     # Example command to update image tag:
+      #     # Update the image.tag field in the values.yaml file
+      #     image_tag="$GITHUB_REF"
+      #     echo "image:" > oauth2-proxy/$target_file
+      #     echo "  tag: v1.2.3" >> oauth2-proxy/$target_file
 
-        env:
-          GITHUB_REF: ${{ github.ref }}
+      #   env:
+      #     GITHUB_REF: ${{ github.ref }}
 
-      - name: print Values
-        run: |
-          environment=${{ steps.env.outputs.environment }}
-          component=${{ steps.component.outputs.component }}
-          branch_name="update-$component-$environment"
+      # - name: Create label
+      #   run: |
+      #     # Define your GitHub repository and access token
+      #     REPO="5h4k4r/pilgrimage-gitops-shakar"
 
-          echo "git checkout -b $branch_name"
-          echo "Update $component/$target_file for $environment"
+      #     # Define the label you want to check and create if it doesn't exist
+      #     LABEL_NAME="autodeploy"
+      #     LABEL_COLOR="00FF00"  # You can specify a color in hexadecimal format
 
-      - name: Import GPG key
-        id: import-gpg
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.PGP_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PGP_PASSPHRASE }}
-          git_user_signingkey: true
-          git_commit_gpgsign: true
+      #     # Make a request to fetch the list of labels
+      #     response=$(curl -s -H "Authorization: token ${{ secrets.PAT_TOKEN }}" "https://api.github.com/repos/$REPO/labels")
 
-      - name: GPG user IDs
-        run: |
-          echo "fingerprint: ${{ steps.import-gpg.outputs.fingerprint }}"
-          echo "keyid:       ${{ steps.import-gpg.outputs.keyid }}"
-          echo "name:        ${{ steps.import-gpg.outputs.name }}"
-          echo "email:       ${{ steps.import-gpg.outputs.email }}"
-
-      - name: Create label
-        run: |
-          # Define your GitHub repository and access token
-          REPO="5h4k4r/pilgrimage-gitops-shakar"
-
-          # Define the label you want to check and create if it doesn't exist
-          LABEL_NAME="autodeploy"
-          LABEL_COLOR="00FF00"  # You can specify a color in hexadecimal format
-
-          # Make a request to fetch the list of labels
-          response=$(curl -s -H "Authorization: token ${{ secrets.PAT_TOKEN }}" "https://api.github.com/repos/$REPO/labels")
-
-          # Check if the label exists in the response
-          if [[ "$response" == *"$LABEL_NAME"* ]]; then
-            echo "Label '$LABEL_NAME' exists in the repository."
-          else
-            echo "Label '$LABEL_NAME' does not exist in the repository. Creating it..."
-            # Create the label using the GitHub API
-            curl -X POST "https://api.github.com/repos/$REPO/labels" \
-              -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
-              -d "{\"name\":\"$LABEL_NAME\",\"color\":\"$LABEL_COLOR\"}"
-            echo "Label '$LABEL_NAME' has been created."
-          fi
+      #     # Check if the label exists in the response
+      #     if [[ "$response" == *"$LABEL_NAME"* ]]; then
+      #       echo "Label '$LABEL_NAME' exists in the repository."
+      #     else
+      #       echo "Label '$LABEL_NAME' does not exist in the repository. Creating it..."
+      #       # Create the label using the GitHub API
+      #       curl -X POST "https://api.github.com/repos/$REPO/labels" \
+      #         -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+      #         -d "{\"name\":\"$LABEL_NAME\",\"color\":\"$LABEL_COLOR\"}"
+      #       echo "Label '$LABEL_NAME' has been created."
+      #     fi
 
       - name: Commit Changes
+        env:
+          BRANCH_NAME: auto-data
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+
         run: |
           set -o xtrace
 
-          environment=${{ steps.env.outputs.environment }}
-          component=${{ steps.component.outputs.component }}
-          branch_name="update-$component-$environment"
-          target_file=${{ steps.update-values.outputs.target_file }}
-
-          echo "git checkout -b $branch_name"
-          echo "Update $component/$target_file for $environment"
-
-          git config --global commit.verbose true
-
           # Do not create a new branch if the branch already exists
-          if [[ $(git ls-remote origin $branch_name) ]]; then
-            git checkout $branch_name
+          if [[ $(git ls-remote origin $BRANCH_NAME) ]]; then
+            git checkout $BRANCH_NAME
           else
-            git checkout -b $branch_name
+            git checkout -b $BRANCH_NAME
           fi
 
-          git add .
-          git commit -m "Update oauth2-proxy/$target_file for $environment"
           git push origin $branch_name
-          echo "${{ secrets.PAT_TOKEN }}" > token.txt
-          gh auth login --with-token < token.txt
-          gh pr create \
-            --body "" \
-            --title "Update oauth2-proxy/$target_file for $environment" \
-            --label autodeploy
+
+          # gh auth login
+          # gh pr create \
+          #   --body "" \
+          #   --title "Update oauth2-proxy/$target_file for $environment" \
+          #   --label autodeploy
+
+      # Use the REST API to commit changes, so we get automatic commit signing
+      - name: Commit changes
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+          FILE_TO_COMMIT: data.txt
+          DESTINATION_BRANCH: auto-data
+        run: |
+          export TODAY=$( date -u '+%Y-%m-%d' )
+          echo "Today is $TODAY\n" >> $FILE_TO_COMMIT
+          export MESSAGE="chore: regenerate $FILE_TO_COMMIT for $TODAY"
+          export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
+          export CONTENT=$( base64 -i $FILE_TO_COMMIT )
+          gh api --method PUT /repos/ditkrg/payroll-users-api/contents/$FILE_TO_COMMIT \
+            --field message="$MESSAGE" \
+            --field content="$CONTENT" \
+            --field encoding="base64" \
+            --field branch="$DESTINATION_BRANCH" \
+            --field sha="$SHA"
