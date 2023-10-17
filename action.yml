@@ -13,7 +13,9 @@ inputs:
   patToken:
     description: GitHub PAT Token
     required: true
-
+  targetDirectory:
+    description: "The directory where the image.yaml file is located"
+    required: true
 runs:
   using: "composite"
   steps:
@@ -37,23 +39,24 @@ runs:
     - id: component
       shell: bash
       run: |
-        component=$(basename $PWD)
+        component=${{ inputs.targetDirectory }}
+        // TODO: use the new way of set-output since the old one is deprecated
         echo "::set-output name=component::${component}"
 
     - run: |
         environment=${{ steps.env.outputs.environment }}
         component=${{ steps.component.outputs.component }}
         if [ $environment == "production" ]; then
-          target_file="overlays/production/values.yaml"
+          target_file="overlays/production/image.yaml"
         elif [ $environment == "staging" ]; then
-          target_file="overlays/staging/values.yaml"
+          target_file="overlays/staging/image.yaml"
         else
-          target_file="overlays/development/values.yaml"
+          target_file="overlays/development/image.yaml"
         fi
-        # Update the values.yaml file with the new image tag
+        # Update the image.yaml file with the new image tag
         # You'll need to customize the logic to update your specific file
         # Example command to update image tag:
-        # Update the image.tag field in the values.yaml file
+        # Update the image.tag field in the image.yaml file
         image_tag="$GITHUB_REF"
         echo "image:" > $component/$target_file
         echo "  tag: ${{ inputs.imageTag }}" >> $component/$target_file
@@ -111,7 +114,7 @@ runs:
         git add .
         git commit -S -m "Update $component/$target_file for $environment"
         git push origin $branch_name
-        echo "${{ secrets.PAT_TOKEN }}" > token.txt
+        echo "${{ inputs.patToken }}" > token.txt
         gh auth login --with-token < token.txt
         gh pr create \
           --body "" \
