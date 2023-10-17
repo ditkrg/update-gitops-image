@@ -13,14 +13,107 @@ inputs:
   githubToken:
     description: GitHub Token
     required: true
-outputs:
-  branchName:
-    description: "The Branch Name of the created branch"
-  branchUrl:
-    description: "The URL users can navigate to in order to view the branch"
-  pullRequestUrl:
-    description: "The URL users can navigate to in order to view the pull request"
 
 runs:
-  using: "node20"
-  main: "index.js"
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        repository: 5h4k4r/pilgrimage-gitops-shakar # Replace with the actual target repository
+        token: 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 # insert the token
+
+    - id: env
+      shell: bash
+      run: |
+        if [[ $GITHUB_REF == refs/tags/* ]]; then
+          environment=production
+        elif [[ $GITHUB_REF == refs/heads/main ]]; then
+          environment=staging
+        else
+          environment=dev
+        fi
+        echo "::set-output name=environment::${environment}"
+
+    - id: component
+      shell: bash
+      run: |
+        component=$(basename $PWD)
+        echo "::set-output name=component::${component}"
+
+    - run: |
+        environment=${{ steps.env.outputs.environment }}
+        component=${{ steps.component.outputs.component }}
+        if [ $environment == "production" ]; then
+          target_file="overlays/production/values.yaml"
+        elif [ $environment == "staging" ]; then
+          target_file="overlays/staging/values.yaml"
+        else
+          target_file="overlays/development/values.yaml"
+        fi
+        # Update the values.yaml file with the new image tag
+        # You'll need to customize the logic to update your specific file
+        # Example command to update image tag:
+        # Update the image.tag field in the values.yaml file
+        image_tag="$GITHUB_REF"
+        echo "Helo world" >> "oauth2-proxy/$target_file"
+      shell: bash
+      env:
+        GITHUB_REF: ${{ github.ref }}
+
+    - run: |
+        environment=${{ steps.env.outputs.environment }}
+        component=${{ steps.component.outputs.component }}
+        branch_name="update-$component-$environment"
+
+        echo "git checkout -b $branch_name"
+        echo "Update $component/$target_file for $environment"
+      shell: bash
+
+    - id: import-gpg
+      uses: crazy-max/ghaction-import-gpg@v4
+      with:
+        gpg_private_key: ${{ secrets.PGP_PRIVATE_KEY }}
+        passphrase: ${{ secrets.PGP_PASSPHRASE }}
+        git_user_signingkey: true
+        git_commit_gpgsign: true
+
+    - run: |
+        echo "fingerprint: ${{ steps.import-gpg.outputs.fingerprint }}"
+        echo "keyid:       ${{ steps.import-gpg.outputs.keyid }}"
+        echo "name:        ${{ steps.import-gpg.outputs.name }}"
+        echo "email:       ${{ steps.import-gpg.outputs.email }}"
+      shell: bash
+
+    - run: |
+        environment=${{ steps.env.outputs.environment }}
+        component=${{ steps.component.outputs.component }}
+        branch_name="update-$component-$environment"
+        target_file=${{ steps.update-values.outputs.target_file }}
+
+        echo "git checkout -b $branch_name"
+        echo "Update $component/$target_file for $environment"
+
+        git config receive.advertisePushOptions true
+        git config --global user.email "${{ steps.import-gpg.outputs.email }}"
+        git config --global user.name "${{ steps.import-gpg.outputs.name }}"
+        git config --global user.signingkey "${{ steps.import-gpg.outputs.keyid }}"
+        git config --global commit.gpgsign true
+        git config --global commit.verbose true
+
+        # Do not create a new branch if the branch already exists
+        if [[ $(git ls-remote origin $branch_name) ]]; then
+          git checkout $branch_name
+        else
+          git checkout -b $branch_name
+        fi
+
+        git add .
+        git commit -S -m "Update oauth2-proxy/$target_file for $environment"
+        git push origin $branch_name
+        echo "${{ secrets.PAT_TOKEN }}" > token.txt
+        gh auth login --with-token < token.txt
+        gh pr create \
+          --body "" \
+          --title "Update oauth2-proxy/$target_file for $environment" \
+          --label autodeploy
+      shell: bash
