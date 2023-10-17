@@ -109,6 +109,6 @@ jobs:
 
           git add .
           git commit -S -m "Update oauth2-proxy/$target_file for $environment"
-          git push origin $branch_name
+          git push origin $branch_name --signed=true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
