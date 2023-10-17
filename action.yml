@@ -55,8 +55,8 @@ runs:
         # Example command to update image tag:
         # Update the image.tag field in the values.yaml file
         image_tag="$GITHUB_REF"
-        echo "image:" > oauth2-proxy/$target_file
-        echo "  tag: ${{ inputs.imageTag }}" >> oauth2-proxy/$target_file
+        echo "image:" > $component/$target_file
+        echo "  tag: ${{ inputs.imageTag }}" >> $component/$target_file
       shell: bash
       env:
         GITHUB_REF: ${{ github.ref }}
@@ -109,12 +109,12 @@ runs:
         fi
 
         git add .
-        git commit -S -m "Update oauth2-proxy/$target_file for $environment"
+        git commit -S -m "Update $component/$target_file for $environment"
         git push origin $branch_name
         echo "${{ secrets.PAT_TOKEN }}" > token.txt
         gh auth login --with-token < token.txt
         gh pr create \
           --body "" \
-          --title "Update oauth2-proxy/$target_file for $environment" \
+          --title "Update $component/$target_file for $environment" \
           --label autodeploy
       shell: bash
