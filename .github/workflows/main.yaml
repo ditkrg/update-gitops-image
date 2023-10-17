@@ -22,12 +22,14 @@ jobs:
         with:
           app-id: ${{ secrets.GITOPS_RUNNER_APP_ID }}
           private-key: ${{ secrets.GITOPS_RUNNER_PRIVATE_KEY }}
+          owner: ditkrg
+          repositories: "payroll-users-api"
 
-      - name: Checkout Target Repository
-        uses: actions/checkout@v4
-        with:
-          repository: 5h4k4r/pilgrimage-gitops-shakar # Replace with the actual target repository
-          token: ${{ steps.generate-token.outputs.token }}
+      # - name: Checkout Target Repository
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: 5h4k4r/pilgrimage-gitops-shakar # Replace with the actual target repository
+      #     token: ${{ steps.generate-token.outputs.token }}
 
       # Use the REST API to commit changes, so we get automatic commit signing
       - name: Commit changes
