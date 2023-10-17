@@ -117,4 +117,5 @@ jobs:
           gh auth login --with-token < token.txt
           gh pr create \
             --body "" \
-            --title "Update oauth2-proxy/$target_file for $environment"
+            --title "Update oauth2-proxy/$target_file for $environment" \
+            --label autodeploy
