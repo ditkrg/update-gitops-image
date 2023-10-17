@@ -38,6 +38,7 @@ jobs:
           DESTINATION_BRANCH: data
         run: |
           export TODAY=$( date -u '+%Y-%m-%d' )
+          echo "Today is $TODAY" > $FILE_TO_COMMIT
           export MESSAGE="chore: regenerate $FILE_TO_COMMIT for $TODAY"
           export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
           export CONTENT=$( base64 -i $FILE_TO_COMMIT )
