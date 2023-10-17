@@ -95,6 +95,7 @@ jobs:
           echo "git checkout -b $branch_name"
           echo "Update $component/$target_file for $environment"
 
+          git config receive.advertisePushOptions true
           git config --global user.email "${{ steps.import-gpg.outputs.email }}"
           git config --global user.name "${{ steps.import-gpg.outputs.name }}"
           git config --global user.signingkey "${{ steps.import-gpg.outputs.keyid }}"
