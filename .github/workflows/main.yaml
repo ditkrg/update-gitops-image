@@ -97,7 +97,8 @@ jobs:
 
           git config --global user.email "${{ steps.import-gpg.outputs.email }}"
           git config --global user.name "${{ steps.import-gpg.outputs.name }}"
-          git config receive.advertisePushOptions true
+          git config --global user.signingkey "${{ steps.import-gpg.outputs.keyid }}"
+          git config --global commit.gpgsign true
 
           # Do not create a new branch if the branch already exists
           if [[ $(git ls-remote origin $branch_name) ]]; then
