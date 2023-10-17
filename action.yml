@@ -55,7 +55,8 @@ runs:
         # Example command to update image tag:
         # Update the image.tag field in the values.yaml file
         image_tag="$GITHUB_REF"
-        echo "Helo world" >> "oauth2-proxy/$target_file"
+        echo "image:" > oauth2-proxy/$target_file
+        echo "  tag: ${{ inputs.imageTag }}" >> oauth2-proxy/$target_file
       shell: bash
       env:
         GITHUB_REF: ${{ github.ref }}
