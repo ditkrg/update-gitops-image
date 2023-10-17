@@ -85,32 +85,32 @@ jobs:
           echo "name:        ${{ steps.import-gpg.outputs.name }}"
           echo "email:       ${{ steps.import-gpg.outputs.email }}"
 
-      - name: Commit Changes
-        run: |
-          environment=${{ steps.env.outputs.environment }}
-          component=${{ steps.component.outputs.component }}
-          branch_name="update-$component-$environment"
-          target_file=${{ steps.update-values.outputs.target_file }}
+      # - name: Commit Changes
+      #   run: |
+      #     environment=${{ steps.env.outputs.environment }}
+      #     component=${{ steps.component.outputs.component }}
+      #     branch_name="update-$component-$environment"
+      #     target_file=${{ steps.update-values.outputs.target_file }}
 
-          echo "git checkout -b $branch_name"
-          echo "Update $component/$target_file for $environment"
+      #     echo "git checkout -b $branch_name"
+      #     echo "Update $component/$target_file for $environment"
 
-          git config receive.advertisePushOptions true
-          git config --global user.email "${{ steps.import-gpg.outputs.email }}"
-          git config --global user.name "${{ steps.import-gpg.outputs.name }}"
-          git config --global user.signingkey "${{ steps.import-gpg.outputs.keyid }}"
-          git config --global commit.gpgsign true
+      #     git config receive.advertisePushOptions true
+      #     git config --global user.email "${{ steps.import-gpg.outputs.email }}"
+      #     git config --global user.name "${{ steps.import-gpg.outputs.name }}"
+      #     git config --global user.signingkey "${{ steps.import-gpg.outputs.keyid }}"
+      #     git config --global commit.gpgsign true
 
-          # Do not create a new branch if the branch already exists
-          if [[ $(git ls-remote origin $branch_name) ]]; then
-            git checkout $branch_name
-          else
-            git checkout -b $branch_name
-          fi
+      #     # Do not create a new branch if the branch already exists
+      #     if [[ $(git ls-remote origin $branch_name) ]]; then
+      #       git checkout $branch_name
+      #     else
+      #       git checkout -b $branch_name
+      #     fi
 
-          git add .
-          git commit -S -m "Update oauth2-proxy/$target_file for $environment"
-          git push origin $branch_name
+      #     git add .
+      #     git commit -S -m "Update oauth2-proxy/$target_file for $environment"
+      #     git push origin $branch_name
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
