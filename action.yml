@@ -10,8 +10,8 @@ inputs:
   imageTag:
     description: "The tag of the image to be udpated"
     required: true
-  githubToken:
-    description: GitHub Token
+  patToken:
+    description: GitHub PAT Token
     required: true
 
 runs:
@@ -20,7 +20,7 @@ runs:
     - uses: actions/checkout@v4
       with:
         repository: 5h4k4r/pilgrimage-gitops-shakar # Replace with the actual target repository
-        token: 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 # insert the token
+        token: ${{ patToken }} # insert the token
 
     - id: env
       shell: bash
