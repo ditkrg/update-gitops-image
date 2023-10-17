@@ -113,14 +113,9 @@ jobs:
           git add .
           git commit -S -m "Update oauth2-proxy/$target_file for $environment"
           git push origin $branch_name
+          gh auth login --with-token < token.txt
+          gh pr create \
+            --body "" \
+            --title "Update oauth2-proxy/$target_file for $environment"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - uses: stefanzweifel/git-auto-commit-action@v5
-      #   with:
-      #     commit_message: message2
-      #     # branch: update-${{ steps.component.outputs.component }}-${{ steps.env.outputs.environment }}
-      #     commit_user_name: DIT Bot
-      #     commit_user_email: actions@github.com
-      #     commit_author: actions@github.com
-      #     repository: 5h4k4r/pilgrimage-gitops-shakar
