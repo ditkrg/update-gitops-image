@@ -16,11 +16,36 @@ jobs:
       # - name: Setup Git
       #   run: apt-get update -y && apt-get install git -y
 
+      - name: Generate a token
+        id: generate-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.GITOPS_RUNNER_APP_ID }}
+          private-key: ${{ secrets.GITOPS_RUNNER_PRIVATE_KEY }}
+
       - name: Checkout Target Repository
         uses: actions/checkout@v4
         with:
           repository: 5h4k4r/pilgrimage-gitops-shakar # Replace with the actual target repository
-          token: ${{ secrets.PAT_TOKEN }} # insert the token
+          token: ${{ steps.generate-token.outputs.token }}
+
+      # Use the REST API to commit changes, so we get automatic commit signing
+      - name: Commit changes
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+          FILE_TO_COMMIT: data.csv
+          DESTINATION_BRANCH: data
+        run: |
+          export TODAY=$( date -u '+%Y-%m-%d' )
+          export MESSAGE="chore: regenerate $FILE_TO_COMMIT for $TODAY"
+          export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
+          export CONTENT=$( base64 -i $FILE_TO_COMMIT )
+          gh api --method PUT /repos/ditkrg/payroll-users-api/contents/$FILE_TO_COMMIT \
+            --field message="$MESSAGE" \
+            --field content="$CONTENT" \
+            --field encoding="base64" \
+            --field branch="$DESTINATION_BRANCH" \
+            --field sha="$SHA"
 
       - name: Determine Environment
         id: env
@@ -73,7 +98,7 @@ jobs:
 
       - name: Import GPG key
         id: import-gpg
-        uses: crazy-max/ghaction-import-gpg@v4
+        uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.PGP_PRIVATE_KEY }}
           passphrase: ${{ secrets.PGP_PASSPHRASE }}
@@ -86,6 +111,7 @@ jobs:
           echo "keyid:       ${{ steps.import-gpg.outputs.keyid }}"
           echo "name:        ${{ steps.import-gpg.outputs.name }}"
           echo "email:       ${{ steps.import-gpg.outputs.email }}"
+
       - name: Create label
         run: |
           # Define your GitHub repository and access token
@@ -112,6 +138,8 @@ jobs:
 
       - name: Commit Changes
         run: |
+          set -o xtrace
+
           environment=${{ steps.env.outputs.environment }}
           component=${{ steps.component.outputs.component }}
           branch_name="update-$component-$environment"
@@ -120,11 +148,6 @@ jobs:
           echo "git checkout -b $branch_name"
           echo "Update $component/$target_file for $environment"
 
-          git config receive.advertisePushOptions true
-          git config --global user.email "${{ steps.import-gpg.outputs.email }}"
-          git config --global user.name "${{ steps.import-gpg.outputs.name }}"
-          git config --global user.signingkey "${{ steps.import-gpg.outputs.keyid }}"
-          git config --global commit.gpgsign true
           git config --global commit.verbose true
 
           # Do not create a new branch if the branch already exists
@@ -135,7 +158,7 @@ jobs:
           fi
 
           git add .
-          git commit -S -m "Update oauth2-proxy/$target_file for $environment"
+          git commit -m "Update oauth2-proxy/$target_file for $environment"
           git push origin $branch_name
           echo "${{ secrets.PAT_TOKEN }}" > token.txt
           gh auth login --with-token < token.txt
