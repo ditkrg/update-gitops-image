@@ -70,6 +70,21 @@ jobs:
           echo "git checkout -b $branch_name"
           echo "Update $component/$target_file for $environment"
 
+      - name: Import GPG key
+        id: import-gpg
+        uses: crazy-max/ghaction-import-gpg@v4
+        with:
+          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+
+      - name: GPG user IDs
+        run: |
+          echo "fingerprint: ${{ steps.import-gpg.outputs.fingerprint }}"
+          echo "keyid:       ${{ steps.import-gpg.outputs.keyid }}"
+          echo "name:        ${{ steps.import-gpg.outputs.name }}"
+          echo "email:       ${{ steps.import-gpg.outputs.email }}"
+
       - name: Commit Changes
         run: |
           environment=${{ steps.env.outputs.environment }}
@@ -80,8 +95,8 @@ jobs:
           echo "git checkout -b $branch_name"
           echo "Update $component/$target_file for $environment"
 
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global user.email "${{ steps.import-gpg.outputs.email }}"
+          git config --global user.name "${{ steps.import-gpg.outputs.name }}"
 
           # Do not create a new branch if the branch already exists
           if [[ $(git ls-remote origin $branch_name) ]]; then
