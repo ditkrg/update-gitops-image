@@ -19,8 +19,8 @@ runs:
   steps:
     - uses: actions/checkout@v4
       with:
-        repository: 5h4k4r/pilgrimage-gitops-shakar # Replace with the actual target repository
-        token: ${{ patToken }} # insert the token
+        repository: ${{ inputs.owner }}/${{ inputs.repo }} # Replace with the actual target repository
+        token: ${{ inputs.patToken }} # insert the token
 
     - id: env
       shell: bash
