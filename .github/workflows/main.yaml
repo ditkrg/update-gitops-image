@@ -85,6 +85,29 @@ jobs:
           echo "keyid:       ${{ steps.import-gpg.outputs.keyid }}"
           echo "name:        ${{ steps.import-gpg.outputs.name }}"
           echo "email:       ${{ steps.import-gpg.outputs.email }}"
+      - name: Create label
+        run: |
+          # Define your GitHub repository and access token
+          REPO="5h4k4r/pilgrimage-gitops-shakar"
+
+          # Define the label you want to check and create if it doesn't exist
+          LABEL_NAME="autodeploy"
+          LABEL_COLOR="00FF00"  # You can specify a color in hexadecimal format
+
+          # Make a request to fetch the list of labels
+          response=$(curl -s -H "Authorization: token ${{ secrets.PAT_TOKEN }}" "https://api.github.com/repos/$REPO/labels")
+
+          # Check if the label exists in the response
+          if [[ "$response" == *"$LABEL_NAME"* ]]; then
+            echo "Label '$LABEL_NAME' exists in the repository."
+          else
+            echo "Label '$LABEL_NAME' does not exist in the repository. Creating it..."
+            # Create the label using the GitHub API
+            curl -X POST "https://api.github.com/repos/$REPO/labels" \
+              -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+              -d "{\"name\":\"$LABEL_NAME\",\"color\":\"$LABEL_COLOR\"}"
+            echo "Label '$LABEL_NAME' has been created."
+          fi
 
       - name: Commit Changes
         run: |
