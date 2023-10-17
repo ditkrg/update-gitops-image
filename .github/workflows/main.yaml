@@ -80,8 +80,8 @@ jobs:
           echo "git checkout -b $branch_name"
           echo "Update $component/$target_file for $environment"
 
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config user.name "GitHub Actions"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           # Do not create a new branch if the branch already exists
           if [[ $(git ls-remote origin $branch_name) ]]; then
