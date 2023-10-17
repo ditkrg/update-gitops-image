@@ -120,4 +120,4 @@ jobs:
           # branch: update-${{ steps.component.outputs.component }}-${{ steps.env.outputs.environment }}
           commit_user_name: DIT Bot
           commit_user_email: actions@github.com
-          commit_author: actions@github.com
+          commit_author: DIT Bot actions@github.com
