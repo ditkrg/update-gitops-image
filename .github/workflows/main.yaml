@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: 5h4k4r/pilgrimage-gitops-shakar # Replace with the actual target repository
-          token: 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 # insert the token
+          token: ${{ secrets.PAT_TOKEN }} # insert the token
 
       - name: Determine Environment
         id: env
