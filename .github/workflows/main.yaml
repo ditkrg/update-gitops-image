@@ -121,3 +121,4 @@ jobs:
           commit_user_name: DIT Bot
           commit_user_email: actions@github.com
           commit_author: actions@github.com
+          repository: 5h4k4r/pilgrimage-gitops-shakar
