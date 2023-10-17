@@ -75,6 +75,7 @@ jobs:
           environment=${{ steps.env.outputs.environment }}
           component=${{ steps.component.outputs.component }}
           branch_name="update-$component-$environment"
+          target_file=${{ steps.update-values.outputs.target_file }}
 
           echo "git checkout -b $branch_name"
           echo "Update $component/$target_file for $environment"
@@ -90,5 +91,5 @@ jobs:
           fi
 
           git add .
-          git commit -m -S "Update $component/$target_file for $environment"
+          git commit -S -m "Update oauth2-proxy/$target_file for $environment"
           git push origin $branch_name
