@@ -27,8 +27,8 @@ runs:
       with:
         app-id: ${{ inputs.appId }}
         private-key: ${{ inputs.privateKey }}
-        owner: ${{ inputs.repo }}
-        repositories: ${{ inputs.owner }}
+        owner: ${{ inputs.owner }}
+        repositories: ${{ inputs.repo }}
 
     - uses: actions/checkout@v4
       with:
