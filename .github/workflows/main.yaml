@@ -112,9 +112,9 @@ jobs:
       - run: |
           # Update the image.yaml file with the new image tag
           echo "image:" > $TARGET_FILE
-          echo "  tag: V1.2.5" >> $TARGET_FILE
+          echo "  tag: V1.2.6" >> $TARGET_FILE
 
-          export MESSAGE="chore: Update $TARGET_FILE for to V1.2.5"
+          export MESSAGE="chore: Update $TARGET_FILE for to V1.2.6"
           export SHA=$( git rev-parse $DESTINATION_BRANCH:$TARGET_FILE )
           export CONTENT=$( base64 -i $TARGET_FILE )
           gh api --method PUT /repos/ditkrg/pilgrimage-gitops-duplicate/contents/$TARGET_FILE \
