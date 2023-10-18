@@ -140,3 +140,6 @@ jobs:
           fi
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          environment: ${{ steps.env.outputs.environment }}
+          component: ${{ steps.component.outputs.component }}
+          target_file: ${{ steps.find-target-file.outputs.target_file }}
