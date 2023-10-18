@@ -99,6 +99,11 @@ runs:
         branch_name="update-$component-$environment"
         target_file=${{ steps.find-target-file.outputs.target_file }}
 
+        echo "branch_name=$branch_name"
+        echo "target_file=$target_file"
+        echo "environment=$environment"
+        echo "component=$component"
+
         # Do not create a new branch if the branch already exists
         if [[ $(git ls-remote origin $branch_name) ]]; then
           git fetch origin
