@@ -3,30 +3,40 @@ description: "Prints hello world"
 inputs:
   owner:
     description: "Owner of the repository if it is not the current one"
+    default: ${{ github.repository_owner }}
     required: true
+
   repo:
-    description: "Repository on which to udpate. Used only if you want to udpate on another repo"
+    description: "Repository on which to update the image tag"
     required: true
+
   imageTag:
-    description: "The tag of the image to be udpated"
+    description: "The tag of the image to be updated"
     required: true
+
   appId:
     description: "The id of the GitHub App"
     required: true
-  privateKey:
-    description: "The id of the GitHub App"
+
+  private-key:
+    description: "The private key of the GitHub App"
     required: true
-  targetDirectory:
-    description: "The directory where the image.yaml file is located"
+
+  component-name:
+    description: "The directory the component manifests are in"
     required: true
+
+author: DIT KRG
+
 runs:
   using: "composite"
+
   steps:
     - id: generate-token
       uses: actions/create-github-app-token@v1
       with:
         app-id: ${{ inputs.appId }}
-        private-key: ${{ inputs.privateKey }}
+        private-key: ${{ inputs.private-key }}
         owner: ${{ inputs.owner }}
         repositories: ${{ inputs.repo }}
 
@@ -38,6 +48,7 @@ runs:
     - id: get-environment
       shell: bash
       run: |
+
         if [[ $GITHUB_REF == refs/tags/* ]]; then
           environment=production
         elif [[ $GITHUB_REF == refs/heads/main ]]; then
@@ -47,110 +58,102 @@ runs:
         fi
         echo "::set-output name=environment::${environment}"
 
-    - id: component
-      shell: bash
-      run: |
-        component=${{ inputs.targetDirectory }}
-        # TODO: use the new way of set-output since the old one is deprecated
-        echo "::set-output name=component::${component}"
-
     - id: find-target-file
+      shell: bash
+      env:
+        TARGET_ENV: ${{ steps.get-environment.outputs.environment }}
       run: |
-        environment=${{ steps.get-environment.outputs.environment }}
-        component=${{ steps.component.outputs.component }}
-        if [ $environment == "production" ]; then
+
+        if [ $TARGET_ENV == "production" ]; then
           target_file="overlays/production/image.yaml"
-        elif [ $environment == "staging" ]; then
+        elif [ $TARGET_ENV == "staging" ]; then
           target_file="overlays/staging/image.yaml"
         else
           target_file="overlays/development/image.yaml"
         fi
+
         echo "::set-output name=target_file::${target_file}"
-      shell: bash
 
     - id: create-label
-      run: |
-        # Define your GitHub repository and access token
-        REPO="${{ inputs.owner }}/${{ inputs.repo }}"
-
-        # Define the label you want to check and create if it doesn't exist
-        LABEL_NAME="autodeploy"
-        LABEL_COLOR="00FF00"  # You can specify a color in hexadecimal format
-
-        # Make a request to fetch the list of labels
-        response=$(curl -s -H "Authorization: token ${{ steps.generate-token.outputs.token }}" "https://api.github.com/repos/$REPO/labels")
-
-        # Check if the label exists in the response
-        if [[ "$response" == *"$LABEL_NAME"* ]]; then
-          echo "Label '$LABEL_NAME' exists in the repository."
-        else
-          echo "Label '$LABEL_NAME' does not exist in the repository. Creating it..."
-          # Create the label using the GitHub API
-          curl -X POST "https://api.github.com/repos/$REPO/labels" \
-            -H "Authorization: token ${{ steps.generate-token.outputs.token }}" \
-            -d "{\"name\":\"$LABEL_NAME\",\"color\":\"$LABEL_COLOR\"}"
-          echo "Label '$LABEL_NAME' has been created."
-        fi
       shell: bash
+      env:
+        REPO: ${{ inputs.owner }}/${{ inputs.repo }}
+        # Define the label you want to check and create if it doesn't exist
+        LABEL_NAME: auto-deploy
+        # You can specify a color in hexadecimal format
+        LABEL_COLOR: 00FF00
+        # You can specify a color in hexadecimal format
+        LABEL_DESCRIPTION: "This label is used to automatically close a pr when the deployment is done"
 
-    - run: |
-        environment=${{ steps.get-environment.outputs.environment }}
-        component=${{ steps.component.outputs.component }}
-        branch_name="update-$component-$environment"
-        target_file=${{ steps.find-target-file.outputs.target_file }}
+      run: gh label create "$LABEL_NAME" --force --color "$LABEL_COLOR" --description "$LABEL_DESCRIPTION"
 
-        echo "branch_name=$branch_name"
-        echo "target_file=$target_file"
-        echo "environment=$environment"
-        echo "component=$component"
+    - name: Create branch if not exists
+      shell: bash
+      env:
+        TARGET_BRANCH: update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
+      run: |
 
         # Do not create a new branch if the branch already exists
-        if [[ $(git ls-remote origin $branch_name) ]]; then
+        if [[ $(git ls-remote origin "$TARGET_BRANCH") ]]; then
           git fetch origin
-          git checkout $branch_name
+          git checkout "$TARGET_BRANCH"
         else
-          git checkout -b $branch_name
-          git push --set-upstream origin $branch_name
+          git checkout -b "$TARGET_BRANCH"
+          git push --set-upstream origin "$TARGET_BRANCH"
         fi
-      shell: bash
 
       # Use the REST API to commit changes, so we get automatic commit signing
-    - run: |
+    - name: Commit changes
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+        TARGET_FILE: ${{ inputs.component-name }}/${{ steps.find-target-file.outputs.target_file }}
+        TARGET_BRANCH: update-${{ inputs.component-name }}-${{ steps.get-environment.outputs.environment }}
+
+      run: |
+
         # Update the image.yaml file with the new image tag
         full_path_image=${{ inputs.imageTag }}
         image_tag_only="${full_string##*:}"  # Removes everything up to and including the last colon
 
-        echo "image:" > $TARGET_FILE
-        echo "  tag: $image_tag_only" >> $TARGET_FILE
+        cat >$TARGET_FILE <<EOF
+        ---
+        ########################################################################################
+        # This file was automatically generated by the auto-deploy action. Do not edit manually.#
+        ########################################################################################
 
-        export MESSAGE="chore: Update $TARGET_FILE for to $image_tag_only"
-        export SHA=$( git rev-parse $DESTINATION_BRANCH:$TARGET_FILE )
+        image:
+          tag: $image_tag_only
+
+        EOF
+
+        export MESSAGE="chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}"
+        export SHA=$( git rev-parse $TARGET_BRANCH:$TARGET_FILE )
         export CONTENT=$( base64 -i $TARGET_FILE )
         gh api --method PUT /repos/${{ inputs.owner }}/${{ inputs.repo }}/contents/$TARGET_FILE \
           --field message="$MESSAGE" \
           --field content="$CONTENT" \
           --field encoding="base64" \
-          --field branch="$DESTINATION_BRANCH" \
+          --field branch="$TARGET_BRANCH" \
           --field sha="$SHA"
-      env:
-        GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-        DESTINATION_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.get-environment.outputs.environment }}
-        TARGET_FILE: ${{ steps.component.outputs.component }}/${{ steps.find-target-file.outputs.target_file }}
-      shell: bash
 
-    - run: |
+    - name: Create PR and try to merge
+      shell: bash
+      env:
+        GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        LABEL_NAME: auto-deploy
+        TARGET_ENV: ${{ steps.get-environment.outputs.environment }}
+        target_file: ${{ steps.find-target-file.outputs.target_file }}
+        HEAD_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.get-environment.outputs.environment }}
+
+      run: |
+
         # do not create the PR if it already exists from the same branch
         if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
           echo "PR already exists"
         else gh pr create \
-          --body "" \
-          --title "Update $component/$target_file for $environment" \
-          --label autodeploy
+          --fill
+          --label auto-deploy
         fi
-      env:
-        GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-        environment: ${{ steps.get-environment.outputs.environment }}
-        component: ${{ steps.component.outputs.component }}
-        target_file: ${{ steps.find-target-file.outputs.target_file }}
-        HEAD_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.get-environment.outputs.environment }}
-      shell: bash
+
+        gh pr merge -d --auto --merge
