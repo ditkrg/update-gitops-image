@@ -143,7 +143,7 @@ runs:
         GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         LABEL_NAME: auto-deploy
         TARGET_ENV: ${{ steps.get-environment.outputs.environment }}
-        target_file: ${{ steps.find-target-file.outputs.target_file }}
+        TARGET_FILE: ${{ steps.find-target-file.outputs.target_file }}
         HEAD_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.get-environment.outputs.environment }}
 
       run: |
