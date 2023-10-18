@@ -92,8 +92,7 @@ jobs:
               -d "{\"name\":\"$LABEL_NAME\",\"color\":\"$LABEL_COLOR\"}"
             echo "Label '$LABEL_NAME' has been created."
           fi
-        env:
-          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+
 
       - run: |
           environment=${{ steps.env.outputs.environment }}
@@ -118,6 +117,9 @@ jobs:
             --title "Update $component/$target_file for $environment" \
             --label autodeploy
           fi
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+
       # Use the REST API to commit changes, so we get automatic commit signing
       - run: |
           # Update the image.yaml file with the new image tag
