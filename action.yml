@@ -159,7 +159,8 @@ runs:
         if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
           echo "PR already exists"
         else gh pr create \
-          --fill
+          --title "chore: Update ${{ steps.component.outputs.component }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
+          --body "This PR was automatically created by the auto-deploy action. Do not edit manually." \
           --label auto-deploy
         fi
 
