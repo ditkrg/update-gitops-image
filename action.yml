@@ -84,6 +84,8 @@ runs:
         LABEL_COLOR: 00FF00
         # You can specify a color in hexadecimal format
         LABEL_DESCRIPTION: "This label is used to automatically close a pr when the deployment is done"
+        # Set GH_TOKEN
+        GH_TOKEN: ${{ steps.generate-token.outputs.token }}
 
       run: gh label create "$LABEL_NAME" --force --color "$LABEL_COLOR" --description "$LABEL_DESCRIPTION"
 
