@@ -51,7 +51,7 @@ runs:
       shell: bash
       run: |
         component=${{ inputs.targetDirectory }}
-        // TODO: use the new way of set-output since the old one is deprecated
+        # TODO: use the new way of set-output since the old one is deprecated
         echo "::set-output name=component::${component}"
 
     - id: find-target-file
