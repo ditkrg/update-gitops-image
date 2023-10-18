@@ -13,9 +13,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # - name: Setup Git
-      #   run: apt-get update -y && apt-get install git -y
-
       - name: Generate a token
         id: generate-token
         uses: actions/create-github-app-token@v1
@@ -45,93 +42,97 @@ jobs:
       - name: Determine Component Name
         id: component
         run: |
-          component=$(basename $PWD)
+          component=oauth2-proxy
           echo "::set-output name=component::${component}"
 
-      # - name: Update Values File
-      #   run: |
-      #     environment=${{ steps.env.outputs.environment }}
-      #     component=${{ steps.component.outputs.component }}
-      #     if [ $environment == "production" ]; then
-      #       target_file="overlays/production/values.yaml"
-      #     elif [ $environment == "staging" ]; then
-      #       target_file="overlays/staging/values.yaml"
-      #     else
-      #       target_file="overlays/development/values.yaml"
-      #     fi
-      #     # Update the values.yaml file with the new image tag
-      #     # You'll need to customize the logic to update your specific file
-      #     # Example command to update image tag:
-      #     # Update the image.tag field in the values.yaml file
-      #     image_tag="$GITHUB_REF"
-      #     echo "image:" > oauth2-proxy/$target_file
-      #     echo "  tag: v1.2.3" >> oauth2-proxy/$target_file
-
-      #   env:
-      #     GITHUB_REF: ${{ github.ref }}
-
-      # - name: Create label
-      #   run: |
-      #     # Define your GitHub repository and access token
-      #     REPO="5h4k4r/pilgrimage-gitops-shakar"
-
-      #     # Define the label you want to check and create if it doesn't exist
-      #     LABEL_NAME="autodeploy"
-      #     LABEL_COLOR="00FF00"  # You can specify a color in hexadecimal format
-
-      #     # Make a request to fetch the list of labels
-      #     response=$(curl -s -H "Authorization: token ${{ secrets.PAT_TOKEN }}" "https://api.github.com/repos/$REPO/labels")
-
-      #     # Check if the label exists in the response
-      #     if [[ "$response" == *"$LABEL_NAME"* ]]; then
-      #       echo "Label '$LABEL_NAME' exists in the repository."
-      #     else
-      #       echo "Label '$LABEL_NAME' does not exist in the repository. Creating it..."
-      #       # Create the label using the GitHub API
-      #       curl -X POST "https://api.github.com/repos/$REPO/labels" \
-      #         -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
-      #         -d "{\"name\":\"$LABEL_NAME\",\"color\":\"$LABEL_COLOR\"}"
-      #       echo "Label '$LABEL_NAME' has been created."
-      #     fi
-
-      - name: Commit Changes
-        env:
-          BRANCH_NAME: auto-data
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-
+      - id: get-environment
         run: |
-          set -o xtrace
-
-          # Do not create a new branch if the branch already exists
-          if [[ $(git ls-remote origin $BRANCH_NAME) ]]; then
-            git checkout $BRANCH_NAME
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            environment=production
+          elif [[ $GITHUB_REF == refs/heads/main ]]; then
+            environment=staging
           else
-            git checkout -b $BRANCH_NAME
+            environment=dev
+          fi
+          echo "::set-output name=environment::${environment}"
+
+      - id: find-target-file
+        run: |
+          environment=${{ steps.env.outputs.environment }}
+          component=${{ steps.component.outputs.component }}
+          if [ $environment == "production" ]; then
+            target_file="overlays/production/image.yaml"
+          elif [ $environment == "staging" ]; then
+            target_file="overlays/staging/image.yaml"
+          else
+            target_file="overlays/development/image.yaml"
+          fi
+          echo "::set-output name=target_file::${target_file}"
+
+      - id: create-label
+        run: |
+          # Define your GitHub repository and access token
+          REPO="${{ inputs.owner }}/${{ inputs.repo }}"
+
+          # Define the label you want to check and create if it doesn't exist
+          LABEL_NAME="autodeploy"
+          LABEL_COLOR="00FF00"  # You can specify a color in hexadecimal format
+
+          # Make a request to fetch the list of labels
+          response=$(curl -s -H "Authorization: token ${{ steps.generate-token.outputs.token }}" "https://api.github.com/repos/$REPO/labels")
+
+          # Check if the label exists in the response
+          if [[ "$response" == *"$LABEL_NAME"* ]]; then
+            echo "Label '$LABEL_NAME' exists in the repository."
+          else
+            echo "Label '$LABEL_NAME' does not exist in the repository. Creating it..."
+            # Create the label using the GitHub API
+            curl -X POST "https://api.github.com/repos/$REPO/labels" \
+              -H "Authorization: token ${{ steps.generate-token.outputs.token }}" \
+              -d "{\"name\":\"$LABEL_NAME\",\"color\":\"$LABEL_COLOR\"}"
+            echo "Label '$LABEL_NAME' has been created."
           fi
 
-          git push --set-upstream origin $BRANCH_NAME
+      - run: |
+          environment=${{ steps.env.outputs.environment }}
+          component=${{ steps.component.outputs.component }}
+          branch_name="update-$component-$environment"
+          target_file=${{ steps.find-target-file.outputs.target_file }}
 
-          # gh auth login
-          # gh pr create \
-          #   --body "" \
-          #   --title "Update oauth2-proxy/$target_file for $environment" \
-          #   --label autodeploy
+          # Do not create a new branch if the branch already exists
+          if [[ $(git ls-remote origin $branch_name) ]]; then
+            git checkout $branch_name
+          else
+            git checkout -b $branch_name
+          fi
 
+          git push --set-upstream origin $branch_name
+
+          # do not create the PR if it already exists (open)
+          if [[ $(gh pr list --state open --search "Update $component/$target_file for $environment") ]]; then
+            echo "PR already exists"
+          else gh pr create \
+            --body "" \
+            --title "Update $component/$target_file for $environment" \
+            --label autodeploy
+          fi
       # Use the REST API to commit changes, so we get automatic commit signing
-      - name: Commit changes
-        env:
-          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-          FILE_TO_COMMIT: data.txt
-          DESTINATION_BRANCH: auto-data
-        run: |
-          export TODAY=$( date -u '+%Y-%m-%d' )
-          echo "Today is $TODAY\n" >> $FILE_TO_COMMIT
-          export MESSAGE="chore: regenerate $FILE_TO_COMMIT for $TODAY"
-          export SHA=$( git rev-parse $DESTINATION_BRANCH:$FILE_TO_COMMIT )
-          export CONTENT=$( base64 -i $FILE_TO_COMMIT )
-          gh api --method PUT /repos/ditkrg/payroll-users-api/contents/$FILE_TO_COMMIT \
+      - run: |
+          # Update the image.yaml file with the new image tag
+          echo "image:" > $COMPONENT/$TARGET_FILE
+          echo "  tag: ${{ inputs.imageTag }}" >> $COMPONENT/$TARGET_FILE
+
+          export MESSAGE="chore: Update $TARGET_FILE for to ${{ inputs.imageTag }}"
+          export SHA=$( git rev-parse $DESTINATION_BRANCH:$TARGET_FILE )
+          export CONTENT=$( base64 -i $TARGET_FILE )
+          gh api --method PUT /repos/ditkrg/payroll-users-api/contents/$TARGET_FILE \
             --field message="$MESSAGE" \
             --field content="$CONTENT" \
             --field encoding="base64" \
             --field branch="$DESTINATION_BRANCH" \
             --field sha="$SHA"
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+          DESTINATION_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.env.outputs.environment }}
+          TARGET_FILE: ${{ steps.find-target-file.outputs.target_file }}
+          COMPONENT: ${{ steps.component.outputs.component }}
