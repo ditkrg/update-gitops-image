@@ -101,6 +101,7 @@ jobs:
 
           # Do not create a new branch if the branch already exists
           if [[ $(git ls-remote origin $branch_name) ]]; then
+            git fetch origin
             git checkout $branch_name
           else
             git checkout -b $branch_name
