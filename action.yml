@@ -117,10 +117,13 @@ runs:
       # Use the REST API to commit changes, so we get automatic commit signing
     - run: |
         # Update the image.yaml file with the new image tag
-        echo "image:" > $TARGET_FILE
-        echo "  tag: ${{ inputs.imageTag }}" >> $TARGET_FILE
+        full_path_image=${{ inputs.imageTag }}
+        image_tag_only="${full_string##*:}"  # Removes everything up to and including the last colon
 
-        export MESSAGE="chore: Update $TARGET_FILE for to ${{ inputs.imageTag }}"
+        echo "image:" > $TARGET_FILE
+        echo "  tag: $image_tag_only" >> $TARGET_FILE
+
+        export MESSAGE="chore: Update $TARGET_FILE for to $image_tag_only"
         export SHA=$( git rev-parse $DESTINATION_BRANCH:$TARGET_FILE )
         export CONTENT=$( base64 -i $TARGET_FILE )
         gh api --method PUT /repos/${{ inputs.owner }}/${{ inputs.repo }}/contents/$TARGET_FILE \
