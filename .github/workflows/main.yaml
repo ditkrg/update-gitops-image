@@ -98,15 +98,14 @@ jobs:
           environment=${{ steps.env.outputs.environment }}
           component=${{ steps.component.outputs.component }}
           branch_name="update-$component-$environment"
-          target_file=${{ steps.find-target-file.outputs.target_file }}
 
           # Do not create a new branch if the branch already exists
           if [[ $(git ls-remote origin $branch_name) ]]; then
             git checkout $branch_name
           else
             git checkout -b $branch_name
+            git push --set-upstream origin $branch_name
           fi
-          git push --set-upstream origin $branch_name
 
       # Use the REST API to commit changes, so we get automatic commit signing
       - run: |
