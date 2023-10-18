@@ -10,11 +10,11 @@ inputs:
     description: "Repository on which to update the image tag"
     required: true
 
-  imageTag:
+  image-tag:
     description: "The tag of the image to be updated"
     required: true
 
-  appId:
+  app-id:
     description: "The id of the GitHub App"
     required: true
 
@@ -35,7 +35,7 @@ runs:
     - id: generate-token
       uses: actions/create-github-app-token@v1
       with:
-        app-id: ${{ inputs.appId }}
+        app-id: ${{ inputs.app-id }}
         private-key: ${{ inputs.private-key }}
         owner: ${{ inputs.owner }}
         repositories: ${{ inputs.repo }}
@@ -113,7 +113,7 @@ runs:
       run: |
 
         # Update the image.yaml file with the new image tag
-        full_path_image=${{ inputs.imageTag }}
+        full_path_image=${{ inputs.image-tag }}
         image_tag_only="${full_string##*:}"  # Removes everything up to and including the last colon
 
         cat >$TARGET_FILE <<EOF
