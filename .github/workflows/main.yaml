@@ -106,19 +106,7 @@ jobs:
           else
             git checkout -b $branch_name
           fi
-
           git push --set-upstream origin $branch_name
-
-          # do not create the PR if it already exists (open)
-          if [[ $(gh pr list --state open --search "Update $component/$target_file for $environment") ]]; then
-            echo "PR already exists"
-          else gh pr create \
-            --body "" \
-            --title "Update $component/$target_file for $environment" \
-            --label autodeploy
-          fi
-        env:
-          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
 
       # Use the REST API to commit changes, so we get automatic commit signing
       - run: |
@@ -140,3 +128,16 @@ jobs:
           DESTINATION_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.env.outputs.environment }}
           TARGET_FILE: ${{ steps.find-target-file.outputs.target_file }}
           COMPONENT: ${{ steps.component.outputs.component }}
+
+      - name: Create Pull Request
+        run: |
+          # do not create the PR if it already exists (open)
+          if [[ $(gh pr list --state open --search "Update $component/$target_file for $environment") ]]; then
+            echo "PR already exists"
+          else gh pr create \
+            --body "" \
+            --title "Update $component/$target_file for $environment" \
+            --label autodeploy
+          fi
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
