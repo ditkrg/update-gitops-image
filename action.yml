@@ -163,4 +163,4 @@ runs:
           --label auto-deploy
         fi
 
-        gh pr merge --auto --delete-branch --merge "$HEAD_BRANCH"
+        # gh pr merge --auto --delete-branch --merge "$HEAD_BRANCH"
