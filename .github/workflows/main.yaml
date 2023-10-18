@@ -117,7 +117,7 @@ jobs:
           export MESSAGE="chore: Update $TARGET_FILE for to V1.2.3"
           export SHA=$( git rev-parse $DESTINATION_BRANCH:$TARGET_FILE )
           export CONTENT=$( base64 -i $TARGET_FILE )
-          gh api --method PUT /repos/ditkrg/payroll-users-api/contents/$TARGET_FILE \
+          gh api --method PUT /repos/ditkrg/pilgrimage-gitops-duplicate/contents/$TARGET_FILE \
             --field message="$MESSAGE" \
             --field content="$CONTENT" \
             --field encoding="base64" \
