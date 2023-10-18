@@ -92,6 +92,8 @@ jobs:
               -d "{\"name\":\"$LABEL_NAME\",\"color\":\"$LABEL_COLOR\"}"
             echo "Label '$LABEL_NAME' has been created."
           fi
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
 
       - run: |
           environment=${{ steps.env.outputs.environment }}
