@@ -72,7 +72,7 @@ jobs:
       - id: create-label
         run: |
           # Define your GitHub repository and access token
-          REPO="${{ inputs.owner }}/${{ inputs.repo }}"
+          REPO="ditkrg/pilgrimage-gitops-duplicate"
 
           # Define the label you want to check and create if it doesn't exist
           LABEL_NAME="autodeploy"
@@ -124,9 +124,9 @@ jobs:
       - run: |
           # Update the image.yaml file with the new image tag
           echo "image:" > $COMPONENT/$TARGET_FILE
-          echo "  tag: ${{ inputs.imageTag }}" >> $COMPONENT/$TARGET_FILE
+          echo "  tag: V1.2.3" >> $COMPONENT/$TARGET_FILE
 
-          export MESSAGE="chore: Update $TARGET_FILE for to ${{ inputs.imageTag }}"
+          export MESSAGE="chore: Update $TARGET_FILE for to V1.2.3"
           export SHA=$( git rev-parse $DESTINATION_BRANCH:$TARGET_FILE )
           export CONTENT=$( base64 -i $TARGET_FILE )
           gh api --method PUT /repos/ditkrg/payroll-users-api/contents/$TARGET_FILE \
