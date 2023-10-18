@@ -115,7 +115,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
         TARGET_FILE: ${{ inputs.component-name }}/${{ steps.find-target-file.outputs.target_file }}
-        TARGET_BRANCH: update-${{ inputs.component-name }}-${{ steps.get-environment.outputs.environment }}
+        TARGET_BRANCH: update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
 
       run: |
 
