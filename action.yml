@@ -116,12 +116,11 @@ runs:
         GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
         TARGET_FILE: ${{ inputs.component-name }}/${{ steps.find-target-file.outputs.target_file }}
         TARGET_BRANCH: update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
-
       run: |
 
         # Update the image.yaml file with the new image tag
         full_path_image=${{ inputs.image-tag }}
-        image_tag_only="${full_string##*:}"  # Removes everything up to and including the last colon
+        image_tag_only="${full_path_image##*:}"  # Removes everything up to and including the last colon
 
         cat >$TARGET_FILE <<EOF
         ---
