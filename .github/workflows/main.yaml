@@ -112,7 +112,7 @@ jobs:
       - run: |
           # Update the image.yaml file with the new image tag
           echo "image:" > $TARGET_FILE
-          echo "  tag: V1.2.3" >> $TARGET_FILE
+          echo "  tag: V1.2.4" >> $TARGET_FILE
 
           export MESSAGE="chore: Update $TARGET_FILE for to V1.2.3"
           export SHA=$( git rev-parse $DESTINATION_BRANCH:$TARGET_FILE )
