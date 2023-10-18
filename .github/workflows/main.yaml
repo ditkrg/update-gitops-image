@@ -20,11 +20,11 @@ jobs:
           app-id: ${{ secrets.GITOPS_RUNNER_APP_ID }}
           private-key: ${{ secrets.GITOPS_RUNNER_PRIVATE_KEY }}
           owner: ditkrg
-          repositories: "payroll-users-api"
+          repositories: "pilgrimage-gitops-duplicate"
 
       - uses: actions/checkout@v4
         with:
-          repository: ditkrg/payroll-users-api
+          repository: ditkrg/pilgrimage-gitops-duplicate
           token: ${{ steps.generate-token.outputs.token }}
 
       - name: Determine Environment
