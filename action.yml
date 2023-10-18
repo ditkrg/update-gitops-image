@@ -35,7 +35,7 @@ runs:
         repository: ${{ inputs.owner }}/${{ inputs.repo }} # Replace with the actual target repository
         token: ${{ steps.generate-token.outputs.token }} # insert the token
 
-    - id: env
+    - id: get-environment
       shell: bash
       run: |
         if [[ $GITHUB_REF == refs/tags/* ]]; then
@@ -56,7 +56,7 @@ runs:
 
     - id: find-target-file
       run: |
-        environment=${{ steps.env.outputs.environment }}
+        environment=${{ steps.get-environment.outputs.environment }}
         component=${{ steps.component.outputs.component }}
         if [ $environment == "production" ]; then
           target_file="overlays/production/image.yaml"
@@ -94,7 +94,7 @@ runs:
       shell: bash
 
     - run: |
-        environment=${{ steps.env.outputs.environment }}
+        environment=${{ steps.get-environment.outputs.environment }}
         component=${{ steps.component.outputs.component }}
         branch_name="update-$component-$environment"
         target_file=${{ steps.find-target-file.outputs.target_file }}
@@ -131,7 +131,7 @@ runs:
           --field sha="$SHA"
       env:
         GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
-        DESTINATION_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.env.outputs.environment }}
+        DESTINATION_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.get-environment.outputs.environment }}
         TARGET_FILE: ${{ steps.component.outputs.component }}/${{ steps.find-target-file.outputs.target_file }}
       shell: bash
 
@@ -146,8 +146,8 @@ runs:
         fi
       env:
         GH_TOKEN: ${{ steps.generate-token.outputs.token }}
-        environment: ${{ steps.env.outputs.environment }}
+        environment: ${{ steps.get-environment.outputs.environment }}
         component: ${{ steps.component.outputs.component }}
         target_file: ${{ steps.find-target-file.outputs.target_file }}
-        HEAD_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.env.outputs.environment }}
+        HEAD_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.get-environment.outputs.environment }}
       shell: bash
