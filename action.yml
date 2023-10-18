@@ -150,7 +150,7 @@ runs:
         LABEL_NAME: auto-deploy
         TARGET_ENV: ${{ steps.get-environment.outputs.environment }}
         TARGET_FILE: ${{ steps.find-target-file.outputs.target_file }}
-        HEAD_BRANCH: update-${{ inputs.component-name }}-${{ steps.get-environment.outputs.environment }}
+        HEAD_BRANCH: update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
 
       run: |
         # do not create the PR if it already exists from the same branch
