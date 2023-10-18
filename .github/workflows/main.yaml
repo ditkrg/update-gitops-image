@@ -111,9 +111,8 @@ jobs:
       # Use the REST API to commit changes, so we get automatic commit signing
       - run: |
           # Update the image.yaml file with the new image tag
-          echo "$COMPONENT/$TARGET_FILE"
-          echo "image:" > $COMPONENT/$TARGET_FILE
-          echo "  tag: V1.2.3" >> $COMPONENT/$TARGET_FILE
+          echo "image:" > $TARGET_FILE
+          echo "  tag: V1.2.3" >> $TARGET_FILE
 
           export MESSAGE="chore: Update $TARGET_FILE for to V1.2.3"
           export SHA=$( git rev-parse $DESTINATION_BRANCH:$TARGET_FILE )
@@ -127,8 +126,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
           DESTINATION_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.env.outputs.environment }}
-          TARGET_FILE: ${{ steps.find-target-file.outputs.target_file }}
-          COMPONENT: ${{ steps.component.outputs.component }}
+          TARGET_FILE: ${{ steps.component.outputs.component }}/${{ steps.find-target-file.outputs.target_file }}
 
       - name: Create Pull Request
         run: |
