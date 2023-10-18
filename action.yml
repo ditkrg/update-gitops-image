@@ -10,8 +10,11 @@ inputs:
   imageTag:
     description: "The tag of the image to be udpated"
     required: true
-  patToken:
-    description: GitHub PAT Token
+  appId:
+    description: "The id of the GitHub App"
+    required: true
+  privateKey:
+    description: "The id of the GitHub App"
     required: true
   targetDirectory:
     description: "The directory where the image.yaml file is located"
@@ -19,10 +22,18 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - id: generate-token
+      uses: actions/create-github-app-token@v1
+      with:
+        app-id: ${{ inputs.appId }}
+        private-key: ${{ inputs.privateKey }}
+        owner: ${{ inputs.repo }}
+        repositories: ${{ inputs.owner }}
+
     - uses: actions/checkout@v4
       with:
         repository: ${{ inputs.owner }}/${{ inputs.repo }} # Replace with the actual target repository
-        token: ${{ inputs.patToken }} # insert the token
+        token: ${{ steps.generate-token.outputs.token }} # insert the token
 
     - id: env
       shell: bash
@@ -43,7 +54,8 @@ runs:
         // TODO: use the new way of set-output since the old one is deprecated
         echo "::set-output name=component::${component}"
 
-    - run: |
+    - id: find-target-file
+      run: |
         environment=${{ steps.env.outputs.environment }}
         component=${{ steps.component.outputs.component }}
         if [ $environment == "production" ]; then
@@ -53,71 +65,84 @@ runs:
         else
           target_file="overlays/development/image.yaml"
         fi
-        # Update the image.yaml file with the new image tag
-        # You'll need to customize the logic to update your specific file
-        # Example command to update image tag:
-        # Update the image.tag field in the image.yaml file
-        image_tag="$GITHUB_REF"
-        echo "image:" > $component/$target_file
-        echo "  tag: ${{ inputs.imageTag }}" >> $component/$target_file
-      shell: bash
-      env:
-        GITHUB_REF: ${{ github.ref }}
-
-    - run: |
-        environment=${{ steps.env.outputs.environment }}
-        component=${{ steps.component.outputs.component }}
-        branch_name="update-$component-$environment"
-
-        echo "git checkout -b $branch_name"
-        echo "Update $component/$target_file for $environment"
+        echo "::set-output name=target_file::${target_file}"
       shell: bash
 
-    - id: import-gpg
-      uses: crazy-max/ghaction-import-gpg@v4
-      with:
-        gpg_private_key: ${{ secrets.PGP_PRIVATE_KEY }}
-        passphrase: ${{ secrets.PGP_PASSPHRASE }}
-        git_user_signingkey: true
-        git_commit_gpgsign: true
+    - id: create-label
+      run: |
+        # Define your GitHub repository and access token
+        REPO="${{ inputs.owner }}/${{ inputs.repo }}"
 
-    - run: |
-        echo "fingerprint: ${{ steps.import-gpg.outputs.fingerprint }}"
-        echo "keyid:       ${{ steps.import-gpg.outputs.keyid }}"
-        echo "name:        ${{ steps.import-gpg.outputs.name }}"
-        echo "email:       ${{ steps.import-gpg.outputs.email }}"
+        # Define the label you want to check and create if it doesn't exist
+        LABEL_NAME="autodeploy"
+        LABEL_COLOR="00FF00"  # You can specify a color in hexadecimal format
+
+        # Make a request to fetch the list of labels
+        response=$(curl -s -H "Authorization: token ${{ steps.generate-token.outputs.token }}" "https://api.github.com/repos/$REPO/labels")
+
+        # Check if the label exists in the response
+        if [[ "$response" == *"$LABEL_NAME"* ]]; then
+          echo "Label '$LABEL_NAME' exists in the repository."
+        else
+          echo "Label '$LABEL_NAME' does not exist in the repository. Creating it..."
+          # Create the label using the GitHub API
+          curl -X POST "https://api.github.com/repos/$REPO/labels" \
+            -H "Authorization: token ${{ steps.generate-token.outputs.token }}" \
+            -d "{\"name\":\"$LABEL_NAME\",\"color\":\"$LABEL_COLOR\"}"
+          echo "Label '$LABEL_NAME' has been created."
+        fi
       shell: bash
 
     - run: |
         environment=${{ steps.env.outputs.environment }}
         component=${{ steps.component.outputs.component }}
         branch_name="update-$component-$environment"
-        target_file=${{ steps.update-values.outputs.target_file }}
-
-        echo "git checkout -b $branch_name"
-        echo "Update $component/$target_file for $environment"
-
-        git config receive.advertisePushOptions true
-        git config --global user.email "${{ steps.import-gpg.outputs.email }}"
-        git config --global user.name "${{ steps.import-gpg.outputs.name }}"
-        git config --global user.signingkey "${{ steps.import-gpg.outputs.keyid }}"
-        git config --global commit.gpgsign true
-        git config --global commit.verbose true
+        target_file=${{ steps.find-target-file.outputs.target_file }}
 
         # Do not create a new branch if the branch already exists
         if [[ $(git ls-remote origin $branch_name) ]]; then
+          git fetch origin
           git checkout $branch_name
         else
           git checkout -b $branch_name
+          git push --set-upstream origin $branch_name
         fi
+      shell: bash
 
-        git add .
-        git commit -S -m "Update $component/$target_file for $environment"
-        git push origin $branch_name
-        echo "${{ inputs.patToken }}" > token.txt
-        gh auth login --with-token < token.txt
-        gh pr create \
+      # Use the REST API to commit changes, so we get automatic commit signing
+    - run: |
+        # Update the image.yaml file with the new image tag
+        echo "image:" > $COMPONENT/$TARGET_FILE
+        echo "  tag: ${{ inputs.imageTag }}" >> $COMPONENT/$TARGET_FILE
+
+        export MESSAGE="chore: Update $TARGET_FILE for to ${{ inputs.imageTag }}"
+        export SHA=$( git rev-parse $DESTINATION_BRANCH:$TARGET_FILE )
+        export CONTENT=$( base64 -i $TARGET_FILE )
+        gh api --method PUT /repos/${{ inputs.owner }}/${{ inputs.repo }}/contents/$TARGET_FILE \
+          --field message="$MESSAGE" \
+          --field content="$CONTENT" \
+          --field encoding="base64" \
+          --field branch="$DESTINATION_BRANCH" \
+          --field sha="$SHA"
+      env:
+        GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+        DESTINATION_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.env.outputs.environment }}
+        TARGET_FILE: ${{ steps.component.outputs.component }}/${{ steps.find-target-file.outputs.target_file }}
+      shell: bash
+
+    - run: |
+        # do not create the PR if it already exists from the same branch
+        if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
+          echo "PR already exists"
+        else gh pr create \
           --body "" \
           --title "Update $component/$target_file for $environment" \
           --label autodeploy
+        fi
+      env:
+        GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        environment: ${{ steps.env.outputs.environment }}
+        component: ${{ steps.component.outputs.component }}
+        target_file: ${{ steps.find-target-file.outputs.target_file }}
+        HEAD_BRANCH: update-${{ steps.component.outputs.component }}-${{ steps.env.outputs.environment }}
       shell: bash
