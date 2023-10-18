@@ -112,8 +112,8 @@ runs:
       # Use the REST API to commit changes, so we get automatic commit signing
     - run: |
         # Update the image.yaml file with the new image tag
-        echo "image:" > $COMPONENT/$TARGET_FILE
-        echo "  tag: ${{ inputs.imageTag }}" >> $COMPONENT/$TARGET_FILE
+        echo "image:" > $TARGET_FILE
+        echo "  tag: ${{ inputs.imageTag }}" >> $TARGET_FILE
 
         export MESSAGE="chore: Update $TARGET_FILE for to ${{ inputs.imageTag }}"
         export SHA=$( git rev-parse $DESTINATION_BRANCH:$TARGET_FILE )
