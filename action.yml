@@ -162,5 +162,3 @@ runs:
           --label auto-deploy
         fi
         # gh pr merge --auto --merge "$HEAD_BRANCH" --body "Merge $HEAD_BRANCH into $TARGET_ENV"
-
-        gh pr list --state open --head "$HEAD_BRANCH" --base main --json number | jq -r '.[].number' | xargs -I {} gh pr merge {} --auto --merge
