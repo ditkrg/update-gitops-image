@@ -144,7 +144,7 @@ runs:
 
         EOF
 
-        # If the file has not changes then don't commit
+        # If the file has not changed then don't commit
         if [[ -z $(git status --porcelain $TARGET_FILE) ]]; then
           echo "No changes to commit"
           echo "::set-output name=commit::false"
