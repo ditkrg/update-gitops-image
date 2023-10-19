@@ -97,6 +97,7 @@ runs:
     - name: Create branch if not exists
       shell: bash
       env:
+        TARGET_FILE: ${{ inputs.component-name }}/${{ steps.find-target-file.outputs.target_file }}
         TARGET_BRANCH: update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
       run: |
 
@@ -108,6 +109,13 @@ runs:
           git checkout -b "$TARGET_BRANCH"
           git push --set-upstream origin "$TARGET_BRANCH"
         fi
+
+        git fetch
+        git rebase $TARGET_BRANCH
+        git checkout --theirs $TARGET_FILE
+        git add $TARGET_FILE
+        git rebase --continue
+        git push --force
 
       # Use the REST API to commit changes, so we get automatic commit signing
     - name: Commit changes
