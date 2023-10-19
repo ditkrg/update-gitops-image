@@ -121,6 +121,7 @@ runs:
         fi
       # Use the REST API to commit changes, so we get automatic commit signing
     - name: Commit changes
+      id: commit
       shell: bash
       env:
         GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
@@ -146,8 +147,10 @@ runs:
         # If the file has not changes then don't commit
         if [[ -z $(git status --porcelain $TARGET_FILE) ]]; then
           echo "No changes to commit"
+          echo "::set-output name=commit::false"
           exit 0
         fi
+
         export MESSAGE="chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}"
         export SHA=$( git rev-parse $TARGET_BRANCH:$TARGET_FILE )
         export CONTENT=$( base64 -i $TARGET_FILE )
@@ -159,6 +162,7 @@ runs:
           --field sha="$SHA"
 
     - name: Create PR and try to merge
+      if: ${{ steps.commit.outputs.commit != 'false' }}
       shell: bash
       env:
         GH_TOKEN: ${{ steps.generate-token.outputs.token }}
