@@ -106,6 +106,8 @@ runs:
           git pull
           git checkout "$TARGET_BRANCH"
         else
+          git fetch origin
+          git pull
           git checkout -b "$TARGET_BRANCH"
           git push --set-upstream origin "$TARGET_BRANCH"
         fi
