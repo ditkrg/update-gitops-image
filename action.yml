@@ -103,6 +103,7 @@ runs:
         # Do not create a new branch if the branch already exists
         if [[ $(git ls-remote origin "$TARGET_BRANCH") ]]; then
           git fetch origin
+          git pull
           git checkout "$TARGET_BRANCH"
         else
           git checkout -b "$TARGET_BRANCH"
@@ -161,4 +162,5 @@ runs:
           --body "This PR was automatically created by the auto-deploy action. Do not edit manually." \
           --label auto-deploy
         fi
-        gh pr merge --auto --merge "$HEAD_BRANCH" --body "Merge $HEAD_BRANCH into $TARGET_ENV"
+
+        gh pr merge --auto --merge
