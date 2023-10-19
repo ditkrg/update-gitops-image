@@ -118,7 +118,7 @@ runs:
           git add $TARGET_FILE
           git rebase --continue
           git push --force
-
+        fi
       # Use the REST API to commit changes, so we get automatic commit signing
     - name: Commit changes
       shell: bash
