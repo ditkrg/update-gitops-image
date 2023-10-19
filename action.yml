@@ -110,12 +110,14 @@ runs:
           git push --set-upstream origin "$TARGET_BRANCH"
         fi
 
+        # check if we have conflicts with main
         git fetch
         git rebase $TARGET_BRANCH
-        git checkout --theirs $TARGET_FILE
-        git add $TARGET_FILE
-        git rebase --continue
-        git push --force
+        if [ $? -ne 0 ]; then
+          git checkout --theirs $TARGET_FILE
+          git add $TARGET_FILE
+          git rebase --continue
+          git push --force
 
       # Use the REST API to commit changes, so we get automatic commit signing
     - name: Commit changes
