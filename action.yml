@@ -143,6 +143,11 @@ runs:
 
         EOF
 
+        # If the file has not changes then don't commit
+        if [[ -z $(git status --porcelain $TARGET_FILE) ]]; then
+          echo "No changes to commit"
+          exit 0
+        fi
         export MESSAGE="chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}"
         export SHA=$( git rev-parse $TARGET_BRANCH:$TARGET_FILE )
         export CONTENT=$( base64 -i $TARGET_FILE )
