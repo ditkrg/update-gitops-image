@@ -166,10 +166,21 @@ runs:
         # do not create the PR if it already exists from the same branch
         if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
           echo "PR already exists"
-        else gh pr create \
-          --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
-          --body "This PR was automatically created by the auto-deploy action. Do not edit manually." \
-          --label auto-deploy
+        else
+          # if the TARGET_ENV is production or staging then do not add the auto-deploy label
+          if [ $TARGET_ENV == "production" ] || [ $TARGET_ENV == "staging" ]; then
+            gh pr create \
+            --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
+            --body "This PR was automatically created by the auto-deploy action. Do not edit manually."
+          else
+            gh pr create \
+            --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
+            --body "This PR was automatically created by the auto-deploy action. Do not edit manually." \
+            --label auto-deploy
+          fi
         fi
 
-        gh pr merge --auto --merge
+        # try to merge the PR if the TARGET_ENV is dev
+        if [ $TARGET_ENV == "dev" ]; then
+          gh pr merge --auto --merge
+        fi
