@@ -202,7 +202,7 @@ runs:
         IS_FILE_CHANGED: ${{ steps.commit.outputs.commit }}
       run: |
         # Use is file changed to determine if we should create a PR or not
-        if [ $IS_FILE_CHANGED != "false" ]; then
+        if [ $IS_FILE_CHANGED != false ]; then
 
           # do not create the PR if it already exists from the same branch
           if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
