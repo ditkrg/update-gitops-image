@@ -171,7 +171,6 @@ runs:
         done
 
         echo -e "$yaml_output" >> $TARGET_FILE
-        echo -e "$yaml_output"
         fi
 
         # If the file has not changes then don't commit
