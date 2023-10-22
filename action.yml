@@ -174,13 +174,12 @@ runs:
         echo -e "$yaml_output"
         fi
 
-        git fetch
-        git pull
-        if [ $(git diff --name-only) ]; then
-          echo "::set-output name=commit::true"
-        else
-          echo "::set-output name=commit::false"
+        # If the file has not changes then don't commit
+        if [[ -z $(git status --porcelain $TARGET_FILE) ]]; then
+          echo "No changes to commit"
+          exit 0
         fi
+
         export MESSAGE="chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}"
         export SHA=$( git rev-parse $TARGET_BRANCH:$TARGET_FILE )
         export CONTENT=$( base64 -i $TARGET_FILE )
@@ -199,29 +198,23 @@ runs:
         TARGET_ENV: ${{ steps.get-environment.outputs.environment }}
         TARGET_FILE: ${{ steps.find-target-file.outputs.target_file }}
         HEAD_BRANCH: update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
-        IS_FILE_CHANGED: ${{ steps.commit.outputs.commit }}
       run: |
-        # Use is file changed to determine if we should create a PR or not
-        if [ $IS_FILE_CHANGED == "true" ]; then
-
-          # do not create the PR if it already exists from the same branch
-          if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
-            echo "PR already exists"
+        # do not create the PR if it already exists from the same branch
+        if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
+          echo "PR already exists"
+        else
+          echo "Creating PR"
+          # if the TARGET_ENV is production or staging then do not add the auto-deploy label
+          if [ $TARGET_ENV == "production" ] || [ $TARGET_ENV == "staging" ]; then
+            gh pr create \
+            --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
+            --body "This PR was automatically created by the auto-deploy action. Do not edit manually."
           else
-            echo "Creating PR"
-            # if the TARGET_ENV is production or staging then do not add the auto-deploy label
-            if [ $TARGET_ENV == "production" ] || [ $TARGET_ENV == "staging" ]; then
-              gh pr create \
-              --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
-              --body "This PR was automatically created by the auto-deploy action. Do not edit manually."
-            else
-              gh pr create \
-              --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
-              --body "This PR was automatically created by the auto-deploy action. Do not edit manually." \
-              --label auto-deploy
-            fi
+            gh pr create \
+            --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
+            --body "This PR was automatically created by the auto-deploy action. Do not edit manually." \
+            --label auto-deploy
           fi
-
         fi
 
         # try to merge the PR if the TARGET_ENV is dev
