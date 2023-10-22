@@ -176,6 +176,7 @@ runs:
         # If the file has not changes then don't commit
         if [[ -z $(git status --porcelain $TARGET_FILE) ]]; then
           echo "::set-output name=commit::false"
+          echo "No changes to commit"
           exit 0
         fi
         echo "::set-output name=commit::true"
