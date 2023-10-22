@@ -208,6 +208,7 @@ runs:
           if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
             echo "PR already exists"
           else
+            echo "Creating PR"
             # if the TARGET_ENV is production or staging then do not add the auto-deploy label
             if [ $TARGET_ENV == "production" ] || [ $TARGET_ENV == "staging" ]; then
               gh pr create \
