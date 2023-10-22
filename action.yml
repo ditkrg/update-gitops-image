@@ -174,10 +174,7 @@ runs:
 
         fi
 
-        # compare the file with the remote file
-        git fetch
-        git diff --exit-code origin/$TARGET_BRANCH $TARGET_FILE
-        if [ $? -ne 0 ]; then
+        if [ $(git diff --name-only) ]; then
           echo "::set-output name=commit::true"
         else
           echo "::set-output name=commit::false"
@@ -203,7 +200,7 @@ runs:
         IS_FILE_CHANGED: ${{ steps.commit.outputs.commit }}
       run: |
         # Use is file changed to determine if we should create a PR or not
-        if [ $IS_FILE_CHANGED != false ]; then
+        if [ $IS_FILE_CHANGED == "true" ]; then
 
           # do not create the PR if it already exists from the same branch
           if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
