@@ -194,8 +194,8 @@ runs:
         IS_COMMIT: ${{ steps.commit.outputs.commit }}
       run: |
         # If the file has not changes then don't commit
-        git pull
         git reset --hard
+        git pull
         if [ $IS_COMMIT == "true" ]; then
 
           # do not create the PR if it already exists from the same branch
