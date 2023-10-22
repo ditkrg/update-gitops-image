@@ -192,7 +192,6 @@ runs:
           --field sha="$SHA"
 
     - name: Create PR and try to merge
-      if: ${{ steps.commit.outputs.commit != 'false' }}
       shell: bash
       env:
         GH_TOKEN: ${{ steps.generate-token.outputs.token }}
@@ -200,8 +199,13 @@ runs:
         TARGET_ENV: ${{ steps.get-environment.outputs.environment }}
         TARGET_FILE: ${{ steps.find-target-file.outputs.target_file }}
         HEAD_BRANCH: update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
-
+        IS_FILE_CHANGED: ${{ steps.commit.outputs.commit }}
       run: |
+        # Use is file changed to determine if we should create a PR or not
+        if [ $IS_FILE_CHANGED == "false" ]; then
+          echo "No changes to commit"
+          exit 0
+        fi
 
 
         # do not create the PR if it already exists from the same branch
