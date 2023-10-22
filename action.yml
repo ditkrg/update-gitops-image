@@ -26,9 +26,6 @@ inputs:
     description: "The directory the component manifests are in"
     required: true
 
-  file-template:
-    description: "The template of the file to be updated"
-
   image-tag-path:
     description: "The path to the image tag in the file to be updated"
     default: global.image.tag
@@ -145,11 +142,6 @@ runs:
         full_path_image=${{ inputs.image-tag }}
         image_tag_only="${full_path_image##*:}"  # Removes everything up to and including the last colon
 
-        # if the file-template is set then use it to create the file else use the image-tag-path
-        if [ -n "${{ inputs.file-template }}" ]; then
-          echo ${{ inputs.file-template }} >> $TARGET_FILE
-        else
-
         # Define the input path
         input_path="${{ inputs.image-tag-path }}"
 
@@ -171,7 +163,6 @@ runs:
         done
 
         echo -e "$yaml_output" >> $TARGET_FILE
-        fi
 
         # If the file has not changes then don't commit
         if [[ -z $(git status --porcelain $TARGET_FILE) ]]; then
