@@ -174,13 +174,14 @@ runs:
 
         fi
 
-        # If the file has not changed then don't commit
-        if [[ -z $(git status --porcelain $TARGET_FILE) ]]; then
-          echo "No changes to commit"
+        # compare the file with the remote file
+        git fetch
+        git diff --exit-code origin/$TARGET_BRANCH $TARGET_FILE
+        if [ $? -ne 0 ]; then
+          echo "::set-output name=commit::true"
+        else
           echo "::set-output name=commit::false"
-          exit 0
         fi
-
         export MESSAGE="chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}"
         export SHA=$( git rev-parse $TARGET_BRANCH:$TARGET_FILE )
         export CONTENT=$( base64 -i $TARGET_FILE )
