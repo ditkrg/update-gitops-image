@@ -204,22 +204,22 @@ runs:
         # Use is file changed to determine if we should create a PR or not
         if [ $IS_FILE_CHANGED != "false" ]; then
 
-        # do not create the PR if it already exists from the same branch
-        if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
-          echo "PR already exists"
-        else
-          # if the TARGET_ENV is production or staging then do not add the auto-deploy label
-          if [ $TARGET_ENV == "production" ] || [ $TARGET_ENV == "staging" ]; then
-            gh pr create \
-            --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
-            --body "This PR was automatically created by the auto-deploy action. Do not edit manually."
+          # do not create the PR if it already exists from the same branch
+          if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
+            echo "PR already exists"
           else
-            gh pr create \
-            --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
-            --body "This PR was automatically created by the auto-deploy action. Do not edit manually." \
-            --label auto-deploy
+            # if the TARGET_ENV is production or staging then do not add the auto-deploy label
+            if [ $TARGET_ENV == "production" ] || [ $TARGET_ENV == "staging" ]; then
+              gh pr create \
+              --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
+              --body "This PR was automatically created by the auto-deploy action. Do not edit manually."
+            else
+              gh pr create \
+              --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
+              --body "This PR was automatically created by the auto-deploy action. Do not edit manually." \
+              --label auto-deploy
+            fi
           fi
-        fi
 
         fi
 
