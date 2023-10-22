@@ -225,5 +225,5 @@ runs:
 
         # try to merge the PR if the TARGET_ENV is dev
         if [ $TARGET_ENV == "dev" ]; then
-          gh pr merge --auto --merge --delete
+          gh pr merge --auto --merge --delete-branch
         fi
