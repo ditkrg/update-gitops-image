@@ -193,9 +193,10 @@ runs:
         HEAD_BRANCH: update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
         IS_COMMIT: ${{ steps.commit.outputs.commit }}
       run: |
-        # If the file has not changes then don't commit
+        # reset the local changes and pull changes from the remote branch (Because we are using the REST API to commit changes and not the git cli)
         git reset --hard
         git pull
+        # If the file has not changes then don't commit
         if [ $IS_COMMIT == "true" ]; then
 
           # do not create the PR if it already exists from the same branch
