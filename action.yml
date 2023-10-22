@@ -179,6 +179,7 @@ runs:
           echo "No changes to commit"
           exit 0
         fi
+        echo "Committing changes"
         echo "::set-output name=commit::true"
 
         export MESSAGE="chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}"
