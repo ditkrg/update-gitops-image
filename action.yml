@@ -208,12 +208,14 @@ runs:
               gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH --label $LABEL_NAME
             fi
           fi
+          export PR_URL=$(gh pr list --state open --base main --head $HEAD_BRANCH --json url | jq -r '.[0].url')
 
         fi
 
-        export PR_URL=$(gh pr list --state open --base main --head $HEAD_BRANCH --json url | jq -r '.[0].url')
-        # print the PR url in green color
-        echo -e "\e[32m$PR_URL\e[0m"
+        # print the PR url in green color if it is not empty
+        if [ -n "$PR_URL" ]; then
+          echo -e "\e[32m$PR_URL\e[0m"
+        fi
 
         # try to merge the PR if the TARGET_ENV is dev
         if [ $TARGET_ENV == "dev" ]; then
