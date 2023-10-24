@@ -1,5 +1,5 @@
-name: "Hello World"
-description: "Prints hello world"
+name: "Update GitOps Image Tag"
+description: "Update the image tag in the GitOps repository"
 inputs:
   owner:
     description: "Owner of the repository if it is not the current one"
