@@ -203,16 +203,12 @@ runs:
             echo "PR already exists"
           else
             if [ $TARGET_ENV == "production" ] || [ $TARGET_ENV == "staging" ]; then
-              gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH
+              export PR_URL=$(gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH)
             else
-              gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH --label $LABEL_NAME
+              export PR_URL=$(gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH --label $LABEL_NAME)
             fi
           fi
-          RED='\e[31m'
-          GREEN='\e[32m'
-          YELLOW='\e[33m'
-          RESET='\e[0m'
-          export PR_URL=$(gh pr list --state open --base main --head $HEAD_BRANCH --json url | jq -r '.[0].url')
+
           echo -e "${GREEN} $PR_URL ${RESET}"
 
         fi
