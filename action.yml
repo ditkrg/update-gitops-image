@@ -224,3 +224,4 @@ runs:
           echo "Merging PR"
           gh pr merge --auto --merge --delete-branch
         fi
+        echo "url=https://google.com" >> $GITHUB_OUTPUT
