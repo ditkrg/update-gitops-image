@@ -198,23 +198,17 @@ runs:
         git pull
         # If the file has not changes then don't commit
         if [ $IS_COMMIT == "true" ]; then
-
-          # do not create the PR if it already exists from the same branch
-          if [[ $(gh pr list --state open --head $HEAD_BRANCH) ]]; then
+          # Do not create a PR if the PR already exists, just export the PR url else create a new PR if the TARGET_ENV it production or staging then do not add the auto-deploy label else add the auto-deploy label and export the PR url
+          if [[ $(gh pr list --state open --base main --head $HEAD_BRANCH) ]]; then
             echo "PR already exists"
+            export PR_URL=$(gh pr list --state open --base main --head $HEAD_BRANCH --json url | jq -r '.[0].url')
           else
-            echo "Creating PR"
-            # if the TARGET_ENV is production or staging then do not add the auto-deploy label
             if [ $TARGET_ENV == "production" ] || [ $TARGET_ENV == "staging" ]; then
-              gh pr create \
-              --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
-              --body "This PR was automatically created by the auto-deploy action. Do not edit manually."
+              gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH
             else
-              gh pr create \
-              --title "chore: Update ${{ inputs.component-name }} image tag to ${{ inputs.image-tag }} in ${{ steps.get-environment.outputs.environment }}" \
-              --body "This PR was automatically created by the auto-deploy action. Do not edit manually." \
-              --label auto-deploy
+              gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH --label $LABEL_NAME
             fi
+            export PR_URL=$(gh pr list --state open --base main --head $HEAD_BRANCH --json url | jq -r '.[0].url')
           fi
 
         fi
