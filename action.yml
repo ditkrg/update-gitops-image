@@ -4,7 +4,7 @@ inputs:
   owner:
     description: "Owner of the repository if it is not the current one"
     default: ${{ github.repository_owner }}
-    required: true
+    required: false
 
   repo:
     description: "Repository on which to update the image tag"
