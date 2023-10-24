@@ -63,7 +63,7 @@ runs:
         else
           environment=dev
         fi
-        echo "::set-output name=environment::${environment}"
+        echo "environment=$environment" >> $GITHUB_OUTPUT
 
     - name: Find target file
       id: find-target-file
@@ -80,7 +80,7 @@ runs:
           target_file="overlays/development/image.yaml"
         fi
 
-        echo "::set-output name=target_file::${target_file}"
+        echo "target_file=$target_file" >> $GITHUB_OUTPUT
 
     - name: Create label
       id: create-label
@@ -166,12 +166,12 @@ runs:
 
         # If the file has not changes then don't commit
         if [[ -z $(git status --porcelain $TARGET_FILE) ]]; then
-          echo "::set-output name=commit::false"
+          echo "commit=false" >> $GITHUB_OUTPUT
           echo "No changes to commit"
           exit 0
         fi
         echo "Committing changes"
-        echo "::set-output name=commit::true"
+        echo "commit=true" >> $GITHUB_OUTPUT
 
         export MESSAGE="chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}"
         export SHA=$( git rev-parse $TARGET_BRANCH:$TARGET_FILE )
