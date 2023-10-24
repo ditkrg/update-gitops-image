@@ -208,8 +208,9 @@ runs:
               export PR_URL=$(gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH --label $LABEL_NAME)
             fi
           fi
-
-          echo -e "${GREEN} PR_URL ${RESET}"
+          GREEN='\e[32m'
+          RESET='\e[0m'
+          echo -e "${GREEN} $PR_URL ${RESET}"
 
         fi
 
