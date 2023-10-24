@@ -203,15 +203,14 @@ runs:
             echo "PR already exists"
           else
             if [ $TARGET_ENV == "production" ] || [ $TARGET_ENV == "staging" ]; then
-              export PR_URL=$(gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH)
+              export pr_url=$(gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH)
             else
-              export PR_URL=$(gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH --label $LABEL_NAME)
+              export pr_url=$(gh pr create --title "chore: Update ${{ inputs.component-name }} image tag to $image_tag_only in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH --label $LABEL_NAME)
             fi
           fi
           GREEN='\e[32m'
           RESET='\e[0m'
-          echo -e "${GREEN}${GREEN} ${PR_URL} ${RESET}"
-
+          echo -e "${GREEN} Pull Request: $pr_url${RESET}"
         fi
 
         # try to merge the PR if the TARGET_ENV is dev
