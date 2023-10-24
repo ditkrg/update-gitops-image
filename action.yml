@@ -210,7 +210,7 @@ runs:
           fi
           GREEN='\e[32m'
           RESET='\e[0m'
-          echo -e "${GREEN} $PR_URL ${RESET}"
+          echo -e "${GREEN} PR_URL ${RESET}"
 
         fi
 
