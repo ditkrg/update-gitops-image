@@ -156,7 +156,7 @@ runs:
         for ((i=0; i<${#path_array[@]}; i++)); do
             component="${path_array[$i]}"
             if [ $i -eq $((${#path_array[@]}-1)) ]; then
-                yaml_output="${yaml_output}  $component: $image_tag_only\n"
+                yaml_output="${yaml_output}  $component: $image_tag_only"
             else
                 yaml_output="$yaml_output$component:\n"
                 yaml_output="${yaml_output}  "  # Add indentation (two spaces) for nesting
@@ -164,7 +164,6 @@ runs:
         done
 
         echo -e "$yaml_output" >> $TARGET_FILE
-        echo -e "\n" >> $TARGET_FILE
 
 
         # If the file has not changes then don't commit
