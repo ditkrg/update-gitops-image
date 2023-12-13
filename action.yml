@@ -124,7 +124,7 @@ runs:
       shell: bash
       env:
         TARGET_FILE: ${{ inputs.component-name }}/${{ steps.find-target-file.outputs.target_file }}
-        TARGET_BRANCH: ${{ steps.get-branch-name.outputs.BRANCH_NAME }}
+        TARGET_BRANCH: ${{ steps.get-branch-name.outputs.TARGET_BRANCH }}
       run: |
 
         # Do not create a new branch if the branch already exists
@@ -153,7 +153,7 @@ runs:
         GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
         FULL_IMAGE_TAG: ${{ inputs.image-tag }}
         TARGET_FILE: ${{ inputs.component-name }}/${{ steps.find-target-file.outputs.target_file }}
-        TARGET_BRANCH: ${{ steps.get-branch-name.outputs.BRANCH_NAME }}
+        TARGET_BRANCH: ${{ steps.get-branch-name.outputs.TARGET_BRANCH }}
       run: |
 
 
@@ -200,7 +200,7 @@ runs:
         LABEL_NAME: auto-deploy
         TARGET_ENV: ${{ steps.get-environment.outputs.environment }}
         TARGET_FILE: ${{ steps.find-target-file.outputs.target_file }}
-        HEAD_BRANCH: ${{ steps.get-branch-name.outputs.BRANCH_NAME }}
+        HEAD_BRANCH: ${{ steps.get-branch-name.outputs.TARGET_BRANCH }}
         IS_COMMIT: ${{ steps.commit.outputs.commit }}
       run: |
         # reset the local changes and pull changes from the remote branch (Because we are using the REST API to commit changes and not the git cli)
