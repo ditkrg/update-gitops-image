@@ -105,11 +105,26 @@ runs:
 
       run: gh label create "$LABEL_NAME" --force --color "$LABEL_COLOR" --description "$LABEL_DESCRIPTION"
 
+    - name: Get branch name
+      id: get-branch-name
+      shell: bash
+      env:
+        TARGET_ENV: ${{ steps.get-environment.outputs.environment }}
+      run: |
+
+        if [ $TARGET_ENV == "production" ]; then
+          BRANCH_NAME="prod-release"
+        else
+          BRANCH_NAME=update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
+        fi
+
+        echo "TARGET_BRANCH=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
     - name: Create branch if not exists
       shell: bash
       env:
         TARGET_FILE: ${{ inputs.component-name }}/${{ steps.find-target-file.outputs.target_file }}
-        TARGET_BRANCH: update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
+        TARGET_BRANCH: ${{ steps.get-branch-name.outputs.BRANCH_NAME }}
       run: |
 
         # Do not create a new branch if the branch already exists
@@ -138,7 +153,7 @@ runs:
         GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
         FULL_IMAGE_TAG: ${{ inputs.image-tag }}
         TARGET_FILE: ${{ inputs.component-name }}/${{ steps.find-target-file.outputs.target_file }}
-        TARGET_BRANCH: update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
+        TARGET_BRANCH: ${{ steps.get-branch-name.outputs.BRANCH_NAME }}
       run: |
 
 
@@ -185,7 +200,7 @@ runs:
         LABEL_NAME: auto-deploy
         TARGET_ENV: ${{ steps.get-environment.outputs.environment }}
         TARGET_FILE: ${{ steps.find-target-file.outputs.target_file }}
-        HEAD_BRANCH: update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
+        HEAD_BRANCH: ${{ steps.get-branch-name.outputs.BRANCH_NAME }}
         IS_COMMIT: ${{ steps.commit.outputs.commit }}
       run: |
         # reset the local changes and pull changes from the remote branch (Because we are using the REST API to commit changes and not the git cli)
