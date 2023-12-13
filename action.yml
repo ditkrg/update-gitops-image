@@ -109,7 +109,8 @@ runs:
       id: get-branch-name
       shell: bash
       env:
-        TARGET_ENV: ${{ steps.get-environment.outputs.environment }}
+        # TODO: revert this to ${{ steps.get-environment.outputs.environment }} when we are done testing
+        TARGET_ENV: production
       run: |
 
         if [ $TARGET_ENV == "production" ]; then
