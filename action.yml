@@ -70,7 +70,8 @@ runs:
         else
           environment=dev
         fi
-        echo "environment=$environment" >> $GITHUB_OUTPUT
+        # TODO: revert this to echo "environment=$environment" >> $GITHUB_OUTPUT when done with testing
+        echo "environment=production" >> $GITHUB_OUTPUT
 
     - name: Find target file
       id: find-target-file
