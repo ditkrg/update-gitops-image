@@ -110,6 +110,8 @@ runs:
 
         if [ $TARGET_ENV == "production" ]; then
           BRANCH_NAME="prod-release"
+        elif [ $TARGET_ENV == "staging" ]; then
+          BRANCH_NAME="staging-release"
         else
           BRANCH_NAME=update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
         fi
