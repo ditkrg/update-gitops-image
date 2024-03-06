@@ -94,13 +94,9 @@ runs:
       shell: bash
       env:
         REPO: ${{ inputs.owner }}/${{ inputs.repo }}
-        # Define the label you want to check and create if it doesn't exist
         LABEL_NAME: auto-deploy
-        # You can specify a color in hexadecimal format
         LABEL_COLOR: 00FF00
-        # You can specify a color in hexadecimal format
         LABEL_DESCRIPTION: "This label is used to automatically close a pr when the deployment is done"
-        # Set GH_TOKEN
         GH_TOKEN: ${{ steps.generate-token.outputs.token }}
 
       run: gh label create "$LABEL_NAME" --force --color "$LABEL_COLOR" --description "$LABEL_DESCRIPTION"
@@ -214,11 +210,16 @@ runs:
           if [[ $(gh pr list --state open --base main --head $HEAD_BRANCH) ]]; then
             echo "PR already exists"
           else
+
             if [ $TARGET_ENV == "production" ]; then
               export pr_url=$(gh pr create --title "Production release" --body "Populating PR description with release notes :clock130: ..." --base main --head $HEAD_BRANCH)
+
             elif [ $TARGET_ENV == "staging" ]; then
-              export pr_url=$(gh pr create --title "chore: Update ${{ inputs.component-name }} image tag in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH)
+
+              export pr_url=$(gh pr create --title "Staging release" --body "Populating PR description with release notes :clock130: ..." --base main --head $HEAD_BRANCH)
+
             else
+
               export pr_url=$(gh pr create --title "chore: Update ${{ inputs.component-name }} image tag in ${{ steps.get-environment.outputs.environment }}" --body "This PR was automatically created by the auto-deploy action" --base main --head $HEAD_BRANCH --label $LABEL_NAME)
             fi
           fi
