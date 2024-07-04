@@ -107,13 +107,17 @@ runs:
       env:
         TARGET_ENV: ${{ steps.get-environment.outputs.environment }}
       run: |
+        COMPONENT_NAME=${{ inputs.component-name }}
+        # replace all / with - in the component name
+
+        COMPONENT_NAME=${COMPONENT_NAME//\//-}
 
         if [ $TARGET_ENV == "production" ]; then
           BRANCH_NAME="prod-release"
         elif [ $TARGET_ENV == "staging" ]; then
           BRANCH_NAME="staging-release"
         else
-          BRANCH_NAME=update-${{ steps.get-environment.outputs.environment }}-${{ inputs.component-name }}
+          BRANCH_NAME=update-${{ steps.get-environment.outputs.environment }}-$COMPONENT_NAME
         fi
 
         echo "TARGET_BRANCH=$BRANCH_NAME" >> $GITHUB_OUTPUT
