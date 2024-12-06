@@ -92,11 +92,11 @@ runs:
       run: |
 
         if [ $TARGET_ENV == "production" ]; then
-          target_file="${{ inputs.overlays-path }}/production/${{ inputs.image-tag-file-name }}"
+          target_file="${{ inputs.overlays-path }}production/${{ inputs.image-tag-file-name }}"
         elif [ $TARGET_ENV == "staging" ]; then
-          target_file="${{ inputs.overlays-path }}/staging/${{ inputs.image-tag-file-name }}"
+          target_file="${{ inputs.overlays-path }}staging/${{ inputs.image-tag-file-name }}"
         else
-          target_file="${{ inputs.overlays-path }}/development/${{ inputs.image-tag-file-name }}"
+          target_file="${{ inputs.overlays-path }}development/${{ inputs.image-tag-file-name }}"
         fi
 
         echo "target_file=$target_file" >> $GITHUB_OUTPUT
