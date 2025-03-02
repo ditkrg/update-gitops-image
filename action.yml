@@ -32,7 +32,7 @@ inputs:
 
   image-tag-file-name:
     description: "The name of the file to be updated"
-    default: release.yaml
+    default: image.yaml
 
   values-path:
     description: "where the image-tag-path should be applied"
