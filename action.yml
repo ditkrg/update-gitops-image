@@ -37,10 +37,10 @@ runs:
 
   steps:
     - name: Install yq
-      uses: jaxxstorm/action-install-gh-release@v1
+      uses: jaxxstorm/action-install-gh-release@v2
       with:
         repo: mikefarah/yq
-        tag: v4.40.2
+        tag: v4.45.2
         cache: enable
 
     - name: Generate token
